@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — Design Your Dream Bathroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-lt:#e8d5b0;--gold-dim:#c9a96e18;--gold-mid:#c9a96e44;
+  --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f2ede6;--text2:#a09890;--text3:#5a5450;
+  --cream:#f2ede6;--stone:#2a2928;
+  --danger:#e05555;--success:#5db888;
+}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+#app{display:grid;grid-template-columns:1fr 300px;height:100vh}
+
+/* ── Viewport ── */
+#viewport{position:relative;background:var(--bg);overflow:hidden}
+#three-canvas{width:100%;height:100%;display:block}
+
+/* ── Header bar ── */
+#header{
+  position:absolute;top:0;left:0;right:0;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;z-index:10;
+  background:linear-gradient(to bottom,rgba(8,8,7,0.95),transparent);
+  border-bottom:0.5px solid rgba(201,169,110,0.1);
+}
+.logo{display:flex;align-items:baseline;gap:8px}
+.logo-mark{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);letter-spacing:0.08em}
+.logo-tag{font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+
+#toolbar{display:flex;gap:6px}
+.tool-btn{
+  background:rgba(26,25,24,0.8);border:0.5px solid var(--border2);
+  color:var(--text2);padding:6px 14px;border-radius:20px;font-size:11px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;
+  text-transform:uppercase;transition:all 0.2s;backdrop-filter:blur(12px);
+}
+.tool-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.tool-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+#ar-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--gold-dim);border:0.5px solid var(--gold-mid);
+  border-radius:20px;padding:6px 14px;font-size:11px;color:var(--gold);
+  letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;
+}
+#ar-pill:hover{background:var(--gold-mid)}
+.ar-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+
+/* ── Info bar ── */
+#info-bar{
+  position:absolute;bottom:20px;left:20px;right:20px;
+  background:rgba(17,17,16,0.85);border:0.5px solid var(--border);
+  border-radius:12px;padding:10px 18px;backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+}
+#info-bar span{font-size:11px;color:var(--text3);letter-spacing:0.04em}
+#selected-info{font-size:11px;color:var(--gold);letter-spacing:0.04em}
+
+/* ── Toast ── */
+#toast{
+  position:absolute;top:70px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);border:0.5px solid var(--gold-mid);
+  border-radius:20px;padding:7px 18px;font-size:11px;color:var(--gold);
+  letter-spacing:0.06em;opacity:0;transition:opacity 0.3s;pointer-events:none;
+  white-space:nowrap;z-index:30;text-transform:uppercase;
+}
+#toast.show{opacity:1}
+
+/* ── Sidebar ── */
+#sidebar{
+  background:var(--surface);border-left:0.5px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:-20px 0 60px rgba(0,0,0,0.4);
+}
+
+.sidebar-brand{
+  padding:20px 20px 16px;border-bottom:0.5px solid var(--border);
+  background:linear-gradient(135deg,var(--surface),var(--surface2));
+}
+.sidebar-brand h1{
+  font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;
+  color:var(--gold);letter-spacing:0.06em;line-height:1;
+}
+.sidebar-brand p{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px}
+
+.room-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;
+  background:var(--border);border-bottom:0.5px solid var(--border);
+}
+.stat{background:var(--surface2);padding:10px 12px;text-align:center}
+.stat-val{font-size:13px;font-weight:500;color:var(--text);font-family:'Cormorant Garamond',serif}
+.stat-label{font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+
+/* ── Tabs ── */
+.tabs{display:flex;border-bottom:0.5px solid var(--border)}
+.tab{
+  flex:1;padding:11px 8px;font-size:10px;text-align:center;
+  cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;
+  transition:all 0.2s;letter-spacing:0.08em;text-transform:uppercase;
+}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab:hover:not(.active){color:var(--text2)}
+
+/* ── Search ── */
+.search-wrap{padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)}
+.search-input{
+  width:100%;background:var(--surface3);border:0.5px solid var(--border);
+  border-radius:6px;padding:7px 12px;color:var(--text);font-size:12px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
+}
+.search-input::placeholder{color:var(--text3)}
+.search-input:focus{border-color:var(--gold-mid)}
+
+/* ── Products ── */
+#products-panel{flex:1;overflow-y:auto;padding:10px}
+#products-panel::-webkit-scrollbar{width:3px}
+#products-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.cat-label{
+  font-size:9px;color:var(--text3);letter-spacing:0.12em;
+  text-transform:uppercase;padding:10px 4px 6px;
+  display:flex;align-items:center;gap:8px;
+}
+.cat-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+
+.product-card{
+  background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:6px;
+  cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;
+}
+.product-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--gold-dim),transparent);
+  opacity:0;transition:opacity 0.25s;
+}
+.product-card:hover{border-color:var(--gold-mid);transform:translateY(-1px)}
+.product-card:hover::before{opacity:1}
+.product-card:active{transform:scale(0.98)}
+
+.product-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;position:relative}
+.product-dims{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.03em;position:relative}
+.product-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;position:relative}
+.product-price{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--gold)}
+.retailer-badges{display:flex;gap:4px;flex-wrap:wrap}
+.badge{
+  font-size:9px;padding:3px 7px;border-radius:4px;
+  letter-spacing:0.05em;font-weight:500;text-decoration:none;
+  transition:opacity 0.2s;display:inline-block;text-transform:uppercase;
+}
+.badge:hover{opacity:0.8}
+.badge-hd{background:#f9630244;color:#f96302;border:0.5px solid #f9630266}
+.badge-lw{background:#00499044;color:#4a90d9;border:0.5px solid #00499066}
+.badge-wf{background:#7c3aed44;color:#a78bfa;border:0.5px solid #7c3aed66}
+
+/* ── Cart ── */
+#cart-panel{display:none;flex:1;overflow-y:auto;padding:10px;flex-direction:column;gap:6px}
+#cart-panel::-webkit-scrollbar{width:3px}
+#cart-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.cart-item{
+  background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:10px;padding:10px 12px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.cart-item-name{font-size:11px;color:var(--text);flex:1;line-height:1.3}
+.cart-item-price{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);white-space:nowrap}
+.cart-remove{
+  background:none;border:none;color:var(--text3);cursor:pointer;
+  font-size:14px;padding:0 2px;transition:color 0.2s;line-height:1;
+}
+.cart-remove:hover{color:var(--danger)}
+
+.cart-total{
+  background:var(--surface3);border:0.5px solid var(--gold-mid);
+  border-radius:10px;padding:14px;margin-top:4px;
+}
+.cart-total-row{display:flex;justify-content:space-between;align-items:baseline}
+.cart-total-label{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
+.cart-total-amt{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);font-weight:300}
+.cart-note{font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5}
+
+.shop-btns{display:flex;gap:6px;margin-top:10px}
+.shop-btn{
+  flex:1;padding:10px 8px;border-radius:8px;font-size:10px;
+  text-align:center;text-decoration:none;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.2s;
+}
+.shop-btn:hover{opacity:0.85}
+.shop-btn.hd{background:#f9630222;color:#f96302;border:0.5px solid #f9630244}
+.shop-btn.lw{background:#00499022;color:#4a90d9;border:0.5px solid #00499044}
+
+.empty-state{
+  text-align:center;padding:40px 20px;color:var(--text3);
+  font-size:12px;line-height:1.8;
+}
+.empty-state-icon{
+  font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--border2);
+  margin-bottom:12px;font-weight:300;
+}
+
+/* ── Designs Panel ── */
+#designs-panel{display:none;flex:1;overflow-y:auto;padding:10px;flex-direction:column;gap:8px}
+.design-input{
+  width:100%;background:var(--surface3);border:0.5px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-size:12px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
+  margin-bottom:6px;
+}
+.design-input:focus{border-color:var(--gold-mid)}
+.design-input::placeholder{color:var(--text3)}
+.action-btn{
+  width:100%;padding:11px;border-radius:8px;font-size:11px;
+  font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;
+  letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s;margin-bottom:6px;
+}
+.action-btn.primary{background:var(--gold);color:var(--bg);border:none}
+.action-btn.primary:hover{opacity:0.9}
+.action-btn.secondary{background:transparent;color:var(--text2);border:0.5px solid var(--border2)}
+.action-btn.secondary:hover{border-color:var(--gold-mid);color:var(--gold)}
+
+.saved-card{
+  background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s;
+}
+.saved-card:hover{border-color:var(--gold-mid)}
+.saved-card-name{font-size:12px;color:var(--text);font-weight:500}
+.saved-card-meta{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.03em}
+
+.api-note{
+  background:var(--surface3);border:0.5px solid var(--border);
+  border-radius:8px;padding:12px;font-size:11px;color:var(--text3);
+  line-height:1.6;margin-top:4px;
+}
+.api-note strong{color:var(--gold);display:block;margin-bottom:4px;font-size:11px;letter-spacing:0.04em;text-transform:uppercase}
+.api-note code{background:var(--surface);padding:1px 5px;border-radius:3px;font-size:10px;color:var(--gold-lt)}
+
+/* ── Scan Overlay ── */
+#scan-overlay{
+  position:absolute;inset:0;
+  background:rgba(8,8,7,0.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:20;backdrop-filter:blur(8px);
+}
+.scan-frame{
+  width:280px;aspect-ratio:3/4;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.scan-corner{position:absolute;width:28px;height:28px;border-color:var(--gold);border-style:solid}
+.scan-corner.tl{top:0;left:0;border-width:2px 0 0 2px}
+.scan-corner.tr{top:0;right:0;border-width:2px 2px 0 0}
+.scan-corner.bl{bottom:0;left:0;border-width:0 0 2px 2px}
+.scan-corner.br{bottom:0;right:0;border-width:0 2px 2px 0}
+.scan-reticle{width:60px;height:60px;border:0.5px solid var(--gold-mid);border-radius:50%;position:relative}
+.scan-reticle::after{
+  content:'';position:absolute;inset:6px;border:0.5px solid var(--gold-mid);
+  border-radius:50%;animation:spin 4s linear infinite;border-top-color:var(--gold);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scan-line{
+  position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:scanline 2.5s ease-in-out infinite;
+}
+@keyframes scanline{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+.scan-heading{
+  margin-top:28px;font-family:'Cormorant Garamond',serif;font-size:22px;
+  font-weight:300;color:var(--gold);letter-spacing:0.12em;text-align:center;
+}
+.scan-sub{
+  margin-top:8px;font-size:11px;color:var(--text3);text-align:center;
+  max-width:240px;line-height:1.6;letter-spacing:0.04em;
+}
+.scan-progress{width:240px;height:1px;background:var(--border);margin-top:20px;display:none;border-radius:1px;overflow:hidden}
+.scan-progress-bar{height:100%;width:0;background:var(--gold);transition:width 0.15s linear}
+.scan-actions{display:flex;gap:10px;margin-top:20px}
+.scan-cta{
+  padding:10px 26px;border-radius:24px;font-size:11px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;
+  text-transform:uppercase;transition:all 0.2s;
+}
+.scan-cta.primary{background:var(--gold);color:var(--bg);border:none;font-weight:500}
+.scan-cta.primary:hover{opacity:0.9}
+.scan-cta.ghost{background:transparent;color:var(--text3);border:0.5px solid var(--border2)}
+.scan-cta.ghost:hover{border-color:var(--gold-mid);color:var(--text2)}
+.scan-cta:disabled{opacity:0.4;cursor:not-allowed}
+
+/* ── AR Modal ── */
+#ar-modal{
+  display:none;position:absolute;inset:0;
+  background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;z-index:25;flex-direction:column;
+}
+#ar-modal.show{display:flex}
+.modal-card{
+  background:var(--surface);border:0.5px solid var(--border2);
+  border-radius:16px;padding:28px;max-width:360px;
+}
+.modal-card h2{
+  font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;
+  color:var(--gold);margin-bottom:12px;letter-spacing:0.06em;
+}
+.modal-card p{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.modal-card code{background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:10px;color:var(--gold-lt)}
+.modal-close{
+  background:var(--gold);color:var(--bg);border:none;border-radius:24px;
+  padding:10px 28px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 3D Viewport -->
+  <div id="viewport">
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Header -->
+    <div id="header">
+      <div class="logo">
+        <span class="logo-mark">MySpa</span>
+        <span class="logo-tag">Design Studio</span>
+      </div>
+      <div id="toolbar">
+        <button class="tool-btn active" id="btn-move">Move</button>
+        <button class="tool-btn" id="btn-rotate">Rotate 45°</button>
+        <button class="tool-btn" id="btn-delete">Remove</button>
+        <button class="tool-btn" id="btn-reset">Reset View</button>
+      </div>
+      <div id="ar-pill" onclick="document.getElementById('ar-modal').classList.add('show')">
+        <span class="ar-dot"></span>AR Scan
+      </div>
+    </div>
+
+    <div id="info-bar">
+      <span>Orbit: drag · Zoom: scroll · Double-click: rotate item</span>
+      <span id="selected-info">Nothing selected</span>
+    </div>
+
+    <div id="toast"></div>
+
+    <!-- AR Modal -->
+    <div id="ar-modal">
+      <div class="modal-card">
+        <h2>AR Room Scanning</h2>
+        <p>True AR scanning requires a native iOS app using Apple's <strong>RoomPlan SDK</strong> and LiDAR sensor (iPhone 12 Pro and later). The Swift code for this is ready to generate — it just needs to be compiled into a native app.</p>
+        <p>The full scanning pipeline outputs a dimensionally accurate <code>CapturedRoom</code> object which bridges directly into this 3D editor. Accuracy: ±1–2cm.</p>
+        <p style="color:var(--text3);font-size:11px">Coming in the iOS release of MySpa. For now, use the simulated scan or enter your room dimensions manually.</p>
+        <button class="modal-close" onclick="document.getElementById('ar-modal').classList.remove('show')">Got it</button>
+      </div>
+    </div>
+
+    <!-- Scan Overlay -->
+    <div id="scan-overlay">
+      <div class="scan-frame">
+        <div class="scan-corner tl"></div>
+        <div class="scan-corner tr"></div>
+        <div class="scan-corner bl"></div>
+        <div class="scan-corner br"></div>
+        <div class="scan-line"></div>
+        <div class="scan-reticle"></div>
+      </div>
+      <div class="scan-heading" id="scan-heading">Scan Your Bathroom</div>
+      <div class="scan-sub" id="scan-sub">Slowly pan your camera around the room to capture walls, floor, and fixtures</div>
+      <div class="scan-progress" id="scan-progress"><div class="scan-progress-bar" id="scan-bar"></div></div>
+      <div class="scan-actions">
+        <button class="scan-cta primary" id="btn-scan">Simulate Scan</button>
+        <button class="scan-cta ghost" id="btn-skip">Use Default Room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-brand">
+      <h1>MySpa</h1>
+      <p>Bathroom Design Studio</p>
+    </div>
+
+    <div class="room-stats">
+      <div class="stat"><div class="stat-val" id="stat-items">0</div><div class="stat-label">Items</div></div>
+      <div class="stat"><div class="stat-val" id="stat-sqft">—</div><div class="stat-label">Sq Ft</div></div>
+      <div class="stat"><div class="stat-val" id="stat-total">$0</div><div class="stat-label">Est. Total</div></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tab-products" onclick="switchTab('products')">Catalog</div>
+      <div class="tab" id="tab-cart" onclick="switchTab('cart')">Cart <span id="cart-badge"></span></div>
+      <div class="tab" id="tab-designs" onclick="switchTab('designs')">Designs</div>
+    </div>
+
+    <div class="search-wrap">
+      <input class="search-input" id="search" type="text" placeholder="Search fixtures..." oninput="filterProducts(this.value)"/>
+    </div>
+
+    <div id="products-panel"></div>
+    <div id="cart-panel"></div>
+    <div id="designs-panel"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   PRODUCT CATALOG
+═══════════════════════════════════════════════════ */
+const PRODUCTS = [
+  // Vanities
+  {id:'v1',cat:'Vanities',name:'Carrara Marble Double Vanity 60"',price:1299,w:1.52,d:0.55,h:0.9,color:0xf0ece6,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/marble+double+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=marble+double+vanity'}]},
+  {id:'v2',cat:'Vanities',name:'Walnut Floating Vanity 48"',price:849,w:1.22,d:0.46,h:0.85,color:0x5c3a1e,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/walnut+floating+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walnut+floating+vanity'}]},
+  {id:'v3',cat:'Vanities',name:'Matte White Single Vanity 36"',price:599,w:0.91,d:0.46,h:0.88,color:0xe8e4de,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/white+vanity+36'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=white+vanity+36+inch'}]},
+  {id:'v4',cat:'Vanities',name:'Navy & Brushed Gold Vanity 42"',price:1079,w:1.07,d:0.48,h:0.9,color:0x1a2744,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/navy+vanity'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=navy+vanity'}]},
+  {id:'v5',cat:'Vanities',name:'Terrazzo Top Vanity 54"',price:1499,w:1.37,d:0.52,h:0.9,color:0xd4cfc8,
+   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=terrazzo+vanity'}]},
+
+  // Toilets
+  {id:'t1',cat:'Toilets',name:'Kohler Elongated Smart Bidet',price:1499,w:0.38,d:0.72,h:0.78,color:0xfafaf8,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/kohler+smart+bidet+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=kohler+smart+toilet'}]},
+  {id:'t2',cat:'Toilets',name:'One-Piece Comfort Height',price:449,w:0.37,d:0.68,h:0.75,color:0xf8f6f2,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/one+piece+comfort+height+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=one+piece+comfort+height+toilet'}]},
+  {id:'t3',cat:'Toilets',name:'Wall-Hung Toilet & Carrier',price:899,w:0.37,d:0.52,h:0.42,color:0xffffff,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/wall+hung+toilet'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=wall+hung+toilet'}]},
+
+  // Showers
+  {id:'s1',cat:'Showers',name:'Rainfall Walk-In Enclosure 48×36',price:2799,w:1.22,d:0.91,h:2.2,color:0xd8eaf2,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/walk+in+shower+enclosure'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walk+in+shower+enclosure'}]},
+  {id:'s2',cat:'Showers',name:'Frameless Corner Shower 36×36',price:1199,w:0.91,d:0.91,h:2.1,color:0xc8dde8,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/frameless+corner+shower'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=frameless+corner+shower'}]},
+  {id:'s3',cat:'Showers',name:'Steam Spa Cabin 48×48',price:4299,w:1.22,d:1.22,h:2.2,color:0xe8f0f5,
+   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=steam+shower+cabin'},{n:'HD',url:'https://www.homedepot.com/s/steam+shower+cabin'}]},
+
+  // Bathtubs
+  {id:'tb1',cat:'Bathtubs',name:'Freestanding Oval Soaking Tub',price:2199,w:1.72,d:0.76,h:0.65,color:0xf0ede8,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/freestanding+soaking+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=freestanding+soaking+tub'}]},
+  {id:'tb2',cat:'Bathtubs',name:'Clawfoot Cast Iron Tub',price:3199,w:1.68,d:0.76,h:0.72,color:0xfaf8f4,
+   retailers:[{n:'LW',url:'https://www.lowes.com/search?searchTerm=clawfoot+cast+iron+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=clawfoot+tub'}]},
+  {id:'tb3',cat:'Bathtubs',name:'Japanese Deep Soaking Tub',price:2999,w:1.22,d:0.86,h:0.76,color:0xe8e0d8,
+   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=japanese+soaking+tub'},{n:'HD',url:'https://www.homedepot.com/s/japanese+soaking+tub'}]},
+  {id:'tb4',cat:'Bathtubs',name:'Jetted Whirlpool Alcove Tub',price:1899,w:1.52,d:0.86,h:0.55,color:0xf5f2ee,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/jetted+whirlpool+tub'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=jetted+whirlpool+tub'}]},
+
+  // Storage & Accents
+  {id:'st1',cat:'Storage',name:'Recessed Medicine Cabinet 36"',price:399,w:0.91,d:0.1,h:0.76,color:0xd0cec8,
+   retailers:[{n:'HD',url:'https://www.homedepot.com/s/recessed+medicine+cabinet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=recessed+medicine+cabinet'}]},
+  {id:'st2',cat:'Storage',name:'Freestanding Linen Tower',price:299,w:0.46,d:0.36,h:1.83,color:0xf0ede8,
+   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=bathroom+linen+tower'},{n:'HD',url:'https://www.homedepot.com/s/bathroom+linen+tower'}]},
+  {id:'st3',cat:'Storage',name:'Heated Towel Rail 24"',price:249,w:0.61,d:0.1,h:0.76,color:0xc8c0b0,
+   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=heated+towel+rail'},{n:'HD',url:'https://www.homedepot.com/s/heated+towel+rail'}]},
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let scene, camera, renderer, raycaster, mouse;
+let placedObjects = [], selectedObj = null;
+let isDragging = false, dragObj = null;
+let mode = 'move';
+let spherical = {theta:0.55, phi:0.95, r:7};
+let isOrbiting = false, orbitStart = null;
+let cartItems = [];
+let savedDesigns = [];
+try { savedDesigns = JSON.parse(localStorage.getItem('myspa_designs') || '[]'); } catch(e){}
+let roomDims = {w:8, d:8, h:3};
+
+/* ═══════════════════════════════════════════════════
+   THREE.JS ENGINE
+═══════════════════════════════════════════════════ */
+function initThree(){
+  const canvas = document.getElementById('three-canvas');
+  const vp = document.getElementById('viewport');
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x080807);
+  scene.fog = new THREE.FogExp2(0x080807, 0.04);
+
+  camera = new THREE.PerspectiveCamera(50, vp.clientWidth/vp.clientHeight, 0.1, 60);
+  updateCamera();
+
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  renderer.setSize(vp.clientWidth, vp.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Lighting — warm, spa-like
+  scene.add(new THREE.AmbientLight(0xfff5e8, 0.45));
+
+  const key = new THREE.DirectionalLight(0xfff3e0, 1.1);
+  key.position.set(4, 8, 5);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048,2048);
+  key.shadow.camera.left = -8; key.shadow.camera.right = 8;
+  key.shadow.camera.top = 8; key.shadow.camera.bottom = -8;
+  key.shadow.camera.far = 25;
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xd0e4f8, 0.35);
+  fill.position.set(-5, 4, -4);
+  scene.add(fill);
+
+  const warm = new THREE.PointLight(0xfff0cc, 0.4, 12);
+  warm.position.set(0, 2.8, 0);
+  scene.add(warm);
+
+  buildRoom(roomDims);
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mouseup', onMouseUp);
+  canvas.addEventListener('wheel', onWheel, {passive:true});
+  canvas.addEventListener('dblclick', ()=>{ if(selectedObj){ selectedObj.rotation.y += Math.PI/4; toast('Rotated 45°'); }});
+  window.addEventListener('resize', ()=>{
+    camera.aspect = vp.clientWidth/vp.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(vp.clientWidth, vp.clientHeight);
+  });
+  animate();
+}
+
+function buildRoom({w,d,h}){
+  const clear = [];
+  scene.traverse(o=>{ if(o.userData.isRoom) clear.push(o); });
+  clear.forEach(o=>scene.remove(o));
+
+  const hw=w/2, hd=d/2;
+
+  // Floor — warm dark tile
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(w,d),
+    new THREE.MeshLambertMaterial({color:0x1e1c18})
+  );
+  floor.rotation.x = -Math.PI/2;
+  floor.receiveShadow = true;
+  floor.userData.isRoom = true;
+  floor.name = 'floor';
+  scene.add(floor);
+
+  // Subtle grid
+  const grid = new THREE.GridHelper(Math.max(w,d), Math.max(w,d)*2, 0x2a2822, 0x1e1c18);
+  grid.position.y = 0.002;
+  grid.userData.isRoom = true;
+  scene.add(grid);
+
+  // Walls
+  const wallMat = new THREE.MeshLambertMaterial({color:0x161513, side:THREE.FrontSide});
+  [{pos:[0,h/2,-hd],rot:[0,0,0]},{pos:[0,h/2,hd],rot:[0,Math.PI,0]},
+   {pos:[-hw,h/2,0],rot:[0,Math.PI/2,0]},{pos:[hw,h/2,0],rot:[0,-Math.PI/2,0]}
+  ].forEach(({pos,rot})=>{
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(w,d),h), wallMat);
+    m.position.set(...pos); m.rotation.set(...rot);
+    m.receiveShadow = true; m.userData.isRoom = true;
+    scene.add(m);
+  });
+
+  // Update sqft stat
+  document.getElementById('stat-sqft').textContent = Math.round((w*3.28)*(d*3.28));
+}
+
+function updateCamera(){
+  const x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  const y = spherical.r * Math.cos(spherical.phi);
+  const z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.position.set(x, y, z);
+  camera.lookAt(0, 0, 0);
+}
+
+function makeMesh(prod){
+  const geo = new THREE.BoxGeometry(prod.w, prod.h, prod.d);
+  const mat = new THREE.MeshLambertMaterial({color:prod.color});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.y = prod.h/2;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData = {productId:prod.id, product:{...prod}, baseColor:prod.color};
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geo),
+    new THREE.LineBasicMaterial({color:0x3a3630, transparent:true, opacity:0.6})
+  );
+  mesh.add(edges);
+  return mesh;
+}
+
+function selectObject(obj){
+  if(selectedObj){
+    selectedObj.material.emissive = new THREE.Color(0x000000);
+    selectedObj.material.emissiveIntensity = 0;
+  }
+  selectedObj = obj;
+  if(obj){
+    obj.material.emissive = new THREE.Color(0xc9a96e);
+    obj.material.emissiveIntensity = 0.2;
+    const p = obj.userData.product;
+    document.getElementById('selected-info').textContent = `${p.name} · $${p.price.toLocaleString()}`;
+  } else {
+    document.getElementById('selected-info').textContent = 'Nothing selected';
+  }
+}
+
+function getFloorHit(mx, my){
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((mx-rect.left)/rect.width)*2-1;
+  mouse.y = -((my-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+  const t = new THREE.Vector3();
+  return raycaster.ray.intersectPlane(plane, t) ? t : null;
+}
+
+function onMouseDown(e){
+  const rect = e.target.getBoundingClientRect();
+  mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(placedObjects, false);
+  if(hits.length){
+    const obj = hits[0].object;
+    selectObject(obj);
+    if(mode==='move'){ isDragging=true; dragObj=obj; }
+    if(mode==='delete'){
+      scene.remove(obj);
+      placedObjects = placedObjects.filter(o=>o!==obj);
+      cartItems = cartItems.filter(c=>c.id!==obj.userData.productId);
+      selectObject(null);
+      updateStats(); renderCart(); toast('Removed');
+    }
+  } else {
+    if(selectedObj) selectObject(null);
+    isOrbiting = true;
+    orbitStart = {x:e.clientX, y:e.clientY, theta:spherical.theta, phi:spherical.phi};
+  }
+}
+
+function onMouseMove(e){
+  if(isOrbiting && orbitStart){
+    spherical.theta = orbitStart.theta - (e.clientX-orbitStart.x)*0.005;
+    spherical.phi = Math.max(0.12, Math.min(1.52, orbitStart.phi+(e.clientY-orbitStart.y)*0.005));
+    updateCamera(); return;
+  }
+  if(!isDragging||!dragObj) return;
+  const t = getFloorHit(e.clientX, e.clientY);
+  if(t){
+    const p = dragObj.userData.product;
+    const hw=roomDims.w/2, hd=roomDims.d/2;
+    dragObj.position.x = Math.max(-hw+p.w/2, Math.min(hw-p.w/2, t.x));
+    dragObj.position.z = Math.max(-hd+p.d/2, Math.min(hd-p.d/2, t.z));
+  }
+}
+
+function onMouseUp(){ isDragging=false; dragObj=null; isOrbiting=false; orbitStart=null; }
+function onWheel(e){ spherical.r = Math.max(2.5, Math.min(18, spherical.r+e.deltaY*0.012)); updateCamera(); }
+function animate(){ requestAnimationFrame(animate); renderer.render(scene, camera); }
+
+/* ═══════════════════════════════════════════════════
+   PLACEMENT & CART
+═══════════════════════════════════════════════════ */
+function dropProduct(id){
+  const prod = PRODUCTS.find(p=>p.id===id);
+  if(!prod) return;
+  const mesh = makeMesh(prod);
+  const hw=roomDims.w/2-prod.w/2, hd=roomDims.d/2-prod.d/2;
+  mesh.position.set((Math.random()-0.5)*hw*1.2, prod.h/2, (Math.random()-0.5)*hd*1.2);
+  scene.add(mesh);
+  placedObjects.push(mesh);
+  selectObject(mesh);
+  if(!cartItems.find(c=>c.id===id)){
+    cartItems.push({...prod});
+    updateStats(); renderCart();
+  }
+  toast(`${prod.name} placed`);
+}
+
+function removeFromCart(id){
+  cartItems = cartItems.filter(c=>c.id!==id);
+  const mesh = placedObjects.find(o=>o.userData.productId===id);
+  if(mesh){ scene.remove(mesh); placedObjects=placedObjects.filter(o=>o!==mesh); }
+  if(selectedObj?.userData.productId===id) selectObject(null);
+  updateStats(); renderCart();
+}
+
+function updateStats(){
+  const total = cartItems.reduce((a,c)=>a+c.price,0);
+  document.getElementById('stat-items').textContent = placedObjects.length;
+  document.getElementById('stat-total').textContent = total > 999 ? `$${(total/1000).toFixed(1)}k` : `$${total}`;
+  document.getElementById('cart-badge').textContent = cartItems.length > 0 ? ` (${cartItems.length})` : '';
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER PANELS
+═══════════════════════════════════════════════════ */
+function m(v){ return Math.round(v*39.37); }
+
+function buildProductPanel(filter=''){
+  const cats = [...new Set(PRODUCTS.map(p=>p.cat))];
+  const panel = document.getElementById('products-panel');
+  let html = '';
+  cats.forEach(cat=>{
+    const items = PRODUCTS.filter(p=>p.cat===cat && (!filter || p.name.toLowerCase().includes(filter.toLowerCase())));
+    if(!items.length) return;
+    html += `<div class="cat-label">${cat}</div>`;
+    items.forEach(p=>{
+      const badges = p.retailers.map(r=>`
+        <a class="badge badge-${r.n.toLowerCase()}" href="${r.url}" target="_blank" onclick="event.stopPropagation()">${r.n==='HD'?'Home Depot':r.n==='LW'?"Lowe's":'Wayfair'}</a>
+      `).join('');
+      html += `
+        <div class="product-card" onclick="dropProduct('${p.id}')">
+          <div class="product-name">${p.name}</div>
+          <div class="product-dims">${m(p.w)}"W × ${m(p.d)}"D × ${m(p.h)}"H</div>
+          <div class="product-foot">
+            <div class="product-price">$${p.price.toLocaleString()}</div>
+            <div class="retailer-badges">${badges}</div>
+          </div>
+        </div>`;
+    });
+  });
+  if(!html) html = '<div class="empty-state"><div class="empty-state-icon">◯</div>No products match your search.</div>';
+  panel.innerHTML = html;
+}
+
+function filterProducts(v){ buildProductPanel(v); }
+
+function renderCart(){
+  const panel = document.getElementById('cart-panel');
+  if(!cartItems.length){
+    panel.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◯</div>Your cart is empty.<br>Click any product to add it to your room.</div>';
+    return;
+  }
+  const total = cartItems.reduce((a,c)=>a+c.price,0);
+  const hdItems = cartItems.filter(c=>c.retailers.some(r=>r.n==='HD'));
+  const lwItems = cartItems.filter(c=>c.retailers.some(r=>r.n==='LW'));
+  panel.innerHTML = cartItems.map(c=>`
+    <div class="cart-item">
+      <div class="cart-item-name">${c.name}<br><span style="font-size:10px;color:var(--text3)">${m(c.w)}"W × ${m(c.d)}"D</span></div>
+      <div class="cart-item-price">$${c.price.toLocaleString()}</div>
+      <button class="cart-remove" onclick="removeFromCart('${c.id}')" title="Remove">×</button>
+    </div>
+  `).join('') + `
+    <div class="cart-total">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Estimated Total</span>
+        <span class="cart-total-amt">$${total.toLocaleString()}</span>
+      </div>
+      <div class="cart-note">Prices are estimates. Confirm pricing at checkout. Taxes & installation not included.</div>
+      <div class="shop-btns">
+        ${hdItems.length?`<a class="shop-btn hd" href="https://www.homedepot.com" target="_blank">Home Depot (${hdItems.length})</a>`:''}
+        ${lwItems.length?`<a class="shop-btn lw" href="https://www.lowes.com" target="_blank">Lowe's (${lwItems.length})</a>`:''}
+      </div>
+    </div>`;
+}
+
+function renderDesigns(){
+  const panel = document.getElementById('designs-panel');
+  panel.innerHTML = `
+    <div class="api-note">
+      <strong>Live Pricing API</strong>
+      Plug in your Home Depot & Lowe's partner keys into <code>fetchLivePrices()</code> to enable real-time pricing.
+      Apply at <code>developer.homedepot.com</code> and <code>developer.lowes.com</code>.
+    </div>
+    <div style="margin-top:10px">
+      <input class="design-input" id="design-name" type="text" placeholder="Design name (e.g. Master Bath Spa)..."/>
+      <button class="action-btn primary" onclick="saveDesign()">Save Design</button>
+      <button class="action-btn secondary" onclick="exportDesign()">Export as JSON</button>
+    </div>
+    ${savedDesigns.length?`<div class="cat-label" style="margin-top:8px">Saved Designs</div>`:''}
+    ${savedDesigns.map((d,i)=>`
+      <div class="saved-card" onclick="loadDesign(${i})">
+        <div class="saved-card-name">${d.name}</div>
+        <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function saveDesign(){
+  const name = document.getElementById('design-name')?.value.trim() || 'My Design';
+  const design = {
+    name, date: new Date().toLocaleDateString(),
+    items: cartItems.length,
+    total: cartItems.reduce((a,c)=>a+c.price,0),
+    placements: placedObjects.map(o=>({id:o.userData.productId, x:+o.position.x.toFixed(2), z:+o.position.z.toFixed(2), ry:+o.rotation.y.toFixed(2)}))
+  };
+  savedDesigns.unshift(design);
+  try{ localStorage.setItem('myspa_designs', JSON.stringify(savedDesigns)); }catch(e){}
+  renderDesigns(); toast('Design saved!');
+}
+
+function loadDesign(i){
+  const d = savedDesigns[i];
+  placedObjects.forEach(o=>scene.remove(o));
+  placedObjects = []; cartItems = [];
+  d.placements.forEach(pl=>{
+    const prod = PRODUCTS.find(p=>p.id===pl.id);
+    if(!prod) return;
+    const mesh = makeMesh(prod);
+    mesh.position.set(pl.x, prod.h/2, pl.z);
+    mesh.rotation.y = pl.ry;
+    scene.add(mesh);
+    placedObjects.push(mesh);
+    if(!cartItems.find(c=>c.id===prod.id)) cartItems.push({...prod});
+  });
+  updateStats(); renderCart(); toast(`Loaded: ${d.name}`);
+}
+
+function exportDesign(){
+  const blob = new Blob([JSON.stringify({
+    app:'MySpa', created:new Date().toISOString(),
+    room:roomDims, items:cartItems,
+    placements:placedObjects.map(o=>({
+      productId:o.userData.productId,
+      position:{x:+o.position.x.toFixed(2),z:+o.position.z.toFixed(2)},
+      rotationY:+o.rotation.y.toFixed(2)
+    })),
+    estimatedTotal:cartItems.reduce((a,c)=>a+c.price,0)
+  },null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'myspa-design.json';
+  a.click();
+  toast('Exported!');
+}
+
+/* ═══════════════════════════════════════════════════
+   UI WIRING
+═══════════════════════════════════════════════════ */
+function switchTab(tab){
+  ['products','cart','designs'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+    const p = document.getElementById(`${t}-panel`);
+    p.style.display = t===tab ? 'flex' : 'none';
+  });
+  if(tab==='cart') renderCart();
+  if(tab==='designs') renderDesigns();
+}
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2000);
+}
+
+function setMode(m){
+  mode = m;
+  ['btn-move','btn-rotate','btn-delete'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  if(m==='move') document.getElementById('btn-move').classList.add('active');
+  if(m==='delete') document.getElementById('btn-delete').classList.add('active');
+}
+
+document.getElementById('btn-move').onclick = ()=>setMode('move');
+document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); if(selectedObj){ selectedObj.rotation.y+=Math.PI/4; toast('Rotated 45°'); }};
+document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
+document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); };
+
+/* ═══════════════════════════════════════════════════
+   SCAN FLOW
+═══════════════════════════════════════════════════ */
+function launch(){
+  document.getElementById('scan-overlay').style.display = 'none';
+  initThree(); buildProductPanel(); updateStats();
+}
+
+document.getElementById('btn-skip').onclick = launch;
+document.getElementById('btn-scan').onclick = ()=>{
+  const btn = document.getElementById('btn-scan');
+  const skip = document.getElementById('btn-skip');
+  const heading = document.getElementById('scan-heading');
+  const sub = document.getElementById('scan-sub');
+  const prog = document.getElementById('scan-progress');
+  const bar = document.getElementById('scan-bar');
+  btn.disabled = true; skip.disabled = true;
+  prog.style.display = 'block';
+  const steps = [
+    [300,'Detecting floor plane...',20],
+    [800,'Mapping wall surfaces...',45],
+    [1400,'Identifying fixtures...',68],
+    [2000,'Building 3D geometry...',88],
+    [2600,'Room captured.',100],
+  ];
+  steps.forEach(([delay,msg,pct])=>{
+    setTimeout(()=>{
+      sub.textContent = msg;
+      bar.style.width = pct+'%';
+      if(pct===100){
+        heading.textContent = 'Room Ready';
+        roomDims = {w:3.05, d:2.44, h:2.74};
+        setTimeout(()=>{ btn.textContent='Open Editor'; btn.disabled=false; btn.onclick=launch; },400);
+      }
+    }, delay);
+  });
+};
+
+// Init
+buildProductPanel();
+renderCart();
+</script>
+</body>
+</html>

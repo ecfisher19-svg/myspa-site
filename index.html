@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="MySpa — Design your dream spa bathroom in minutes. Scan your room with your iPhone, drag and drop real fixtures, and shop at real prices from Home Depot, Lowe's, and Wayfair."/>
+<title>MySpa — Design Your Dream Spa Bathroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-lt:#e8d5b0;--gold-dim:#c9a96e15;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#181716;--surface3:#222020;
+  --border:#252320;--border2:#353230;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+  --cream:#f0ebe3;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+
+/* ── Custom cursor ── */
+#cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s,opacity 0.2s}
+#cursor-ring{position:fixed;width:32px;height:32px;border:0.5px solid var(--gold-mid);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.12s,width 0.2s,height 0.2s,border-color 0.2s}
+body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring{width:48px;height:48px;border-color:var(--gold)}
+
+/* ── Grain overlay ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+
+/* ── Nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:64px;
+  background:linear-gradient(to bottom,rgba(8,8,7,0.98),rgba(8,8,7,0));
+  border-bottom:0.5px solid rgba(201,169,110,0.08);
+}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--gold);letter-spacing:0.1em}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-cta{
+  background:var(--gold);color:var(--bg);border:none;
+  padding:9px 22px;border-radius:24px;font-size:11px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;
+  transition:opacity 0.2s;
+}
+.nav-cta:hover{opacity:0.88}
+
+/* ── Hero ── */
+#hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:120px 24px 80px;position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(201,169,110,0.07) 0%,transparent 70%);
+}
+.hero-lines{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero-line{position:absolute;left:50%;height:100%;width:0.5px;background:linear-gradient(to bottom,transparent,rgba(201,169,110,0.08),transparent)}
+.hero-line:nth-child(1){transform:translateX(-320px)}
+.hero-line:nth-child(2){transform:translateX(-160px)}
+.hero-line:nth-child(3){transform:translateX(0)}
+.hero-line:nth-child(4){transform:translateX(160px)}
+.hero-line:nth-child(5){transform:translateX(320px)}
+
+.hero-eyebrow{
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:24px;position:relative;z-index:2;
+  display:flex;align-items:center;gap:12px;
+  animation:fadeUp 0.8s ease both;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:32px;height:0.5px;background:var(--gold-mid)}
+
+.hero-headline{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(52px,8vw,96px);font-weight:300;line-height:1.02;
+  color:var(--cream);letter-spacing:-0.01em;
+  max-width:900px;position:relative;z-index:2;
+  animation:fadeUp 0.8s 0.15s ease both;
+}
+.hero-headline em{font-style:italic;color:var(--gold)}
+
+.hero-sub{
+  font-size:16px;color:var(--text2);line-height:1.7;
+  max-width:520px;margin-top:24px;font-weight:300;
+  position:relative;z-index:2;
+  animation:fadeUp 0.8s 0.3s ease both;
+}
+
+.hero-form{
+  display:flex;gap:0;margin-top:40px;position:relative;z-index:2;
+  animation:fadeUp 0.8s 0.45s ease both;
+  box-shadow:0 0 0 0.5px var(--border2),0 20px 60px rgba(0,0,0,0.4);
+  border-radius:32px;overflow:hidden;
+}
+.hero-input{
+  background:var(--surface2);border:none;outline:none;
+  padding:16px 24px;font-size:14px;color:var(--text);
+  font-family:'DM Sans',sans-serif;width:300px;
+}
+.hero-input::placeholder{color:var(--text3)}
+.hero-btn{
+  background:var(--gold);color:var(--bg);border:none;
+  padding:16px 28px;font-size:12px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;white-space:nowrap;transition:opacity 0.2s;
+}
+.hero-btn:hover{opacity:0.9}
+
+.hero-social{
+  margin-top:16px;font-size:11px;color:var(--text3);
+  position:relative;z-index:2;
+  animation:fadeUp 0.8s 0.6s ease both;
+}
+.hero-count{
+  display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;
+  position:relative;z-index:2;
+  animation:fadeUp 0.8s 0.6s ease both;
+}
+.avatar-stack{display:flex}
+.avatar{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid var(--bg);margin-left:-8px;
+  font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center;
+}
+.avatar:first-child{margin-left:0}
+.avatar-1{background:#8b7355}
+.avatar-2{background:#6b5a4e}
+.avatar-3{background:#9a8060}
+.avatar-4{background:#7a6550}
+.hero-count span{font-size:11px;color:var(--text3);letter-spacing:0.04em}
+.hero-count strong{color:var(--text2)}
+
+/* ── Scroll indicator ── */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2;
+  animation:fadeUp 0.8s 0.9s ease both;
+}
+.scroll-hint span{font-size:9px;color:var(--text3);letter-spacing:0.14em;text-transform:uppercase}
+.scroll-line{width:0.5px;height:40px;background:linear-gradient(to bottom,var(--gold-mid),transparent);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{opacity:0.4;transform:scaleY(0.8)}50%{opacity:1;transform:scaleY(1)}}
+
+/* ── How it works ── */
+#how{padding:120px 48px;max-width:1200px;margin:0 auto}
+.section-label{
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:0.5px;background:var(--gold-mid)}
+.section-headline{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,60px);
+  font-weight:300;color:var(--cream);line-height:1.1;max-width:600px;margin-bottom:64px;
+}
+.section-headline em{font-style:italic;color:var(--gold)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.step{
+  background:var(--surface);padding:40px 32px;position:relative;
+  border:0.5px solid var(--border);transition:border-color 0.3s;
+}
+.step:hover{border-color:var(--border2)}
+.step:first-child{border-radius:16px 0 0 16px}
+.step:last-child{border-radius:0 16px 16px 0}
+.step-num{
+  font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;
+  color:var(--border2);line-height:1;margin-bottom:20px;
+}
+.step-icon{
+  width:48px;height:48px;border:0.5px solid var(--border2);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+  font-size:20px;
+}
+.step-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--cream);margin-bottom:10px}
+.step-body{font-size:13px;color:var(--text2);line-height:1.7;font-weight:300}
+.step-tag{
+  display:inline-block;margin-top:16px;font-size:9px;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--gold);border:0.5px solid var(--gold-mid);
+  padding:4px 10px;border-radius:12px;
+}
+
+/* ── Feature strip ── */
+#features{
+  padding:80px 0;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);
+  overflow:hidden;position:relative;
+}
+.feature-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:marquee 28s linear infinite;
+}
+.feature-track:hover{animation-play-state:paused}
+.feature-item{
+  display:inline-flex;align-items:center;gap:14px;
+  padding:0 48px;font-size:13px;color:var(--text2);letter-spacing:0.04em;flex-shrink:0;
+}
+.feature-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── Social proof ── */
+#proof{padding:120px 48px;max-width:1200px;margin:0 auto}
+.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px}
+.testimonial{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:16px;padding:32px;transition:border-color 0.3s;
+}
+.testimonial:hover{border-color:var(--border2)}
+.testimonial-stars{color:var(--gold);font-size:12px;letter-spacing:2px;margin-bottom:16px}
+.testimonial-text{
+  font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;
+  font-style:italic;color:var(--cream);line-height:1.5;margin-bottom:20px;
+}
+.testimonial-author{display:flex;align-items:center;gap:12px}
+.testimonial-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:500;color:var(--cream);flex-shrink:0;
+}
+.testimonial-name{font-size:12px;color:var(--text);font-weight:500}
+.testimonial-role{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── Retailers ── */
+#retailers{padding:80px 48px;border-top:0.5px solid var(--border);text-align:center}
+.retailers-label{font-size:11px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:40px}
+.retailer-logos{display:flex;align-items:center;justify-content:center;gap:56px;flex-wrap:wrap}
+.retailer-logo{font-size:18px;font-weight:500;letter-spacing:0.04em;transition:opacity 0.2s}
+.retailer-logo:hover{opacity:0.8}
+.retailer-logo.hd{color:#f96302}
+.retailer-logo.lw{color:#4a90d9}
+.retailer-logo.wf{color:#a78bfa}
+.retailer-plus{color:var(--text3);font-size:14px}
+
+/* ── Waitlist CTA ── */
+#waitlist{
+  padding:120px 48px;text-align:center;position:relative;overflow:hidden;
+}
+.waitlist-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(201,169,110,0.06),transparent 70%);
+}
+.waitlist-headline{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(40px,6vw,72px);
+  font-weight:300;color:var(--cream);line-height:1.08;max-width:700px;margin:0 auto 16px;
+  position:relative;z-index:2;
+}
+.waitlist-headline em{font-style:italic;color:var(--gold)}
+.waitlist-sub{font-size:15px;color:var(--text2);margin-bottom:40px;font-weight:300;position:relative;z-index:2}
+.waitlist-form{position:relative;z-index:2;display:flex;gap:0;justify-content:center}
+.waitlist-form .hero-form{animation:none}
+
+/* ── Footer ── */
+footer{
+  padding:40px 48px;border-top:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--gold);letter-spacing:0.08em}
+.footer-links{display:flex;gap:28px}
+.footer-links a{font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s}
+.footer-links a:hover{color:var(--text2)}
+.footer-copy{font-size:11px;color:var(--text3)}
+
+/* ── Success state ── */
+.success-msg{
+  display:none;padding:14px 28px;background:var(--surface2);
+  border:0.5px solid rgba(93,184,136,0.4);border-radius:32px;
+  font-size:13px;color:#5db888;letter-spacing:0.04em;margin-top:0;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">MySpa</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#proof">Reviews</a>
+    <a href="#waitlist">Early access</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines">
+    <div class="hero-line"></div><div class="hero-line"></div><div class="hero-line"></div>
+    <div class="hero-line"></div><div class="hero-line"></div>
+  </div>
+
+  <div class="hero-eyebrow">Introducing MySpa</div>
+
+  <h1 class="hero-headline">
+    Design your dream<br><em>spa bathroom</em><br>in minutes
+  </h1>
+
+  <p class="hero-sub">
+    Scan your bathroom with your iPhone, drag and drop real fixtures from Kohler, Moen, and more — then shop at real prices from Home Depot, Lowe's, and Wayfair.
+  </p>
+
+  <div class="hero-form" id="hero-form">
+    <input class="hero-input" type="email" id="hero-email" placeholder="Enter your email address" />
+    <button class="hero-btn" onclick="joinWaitlist('hero')">Get Early Access</button>
+  </div>
+  <div class="success-msg" id="hero-success">You're on the list — we'll be in touch soon.</div>
+
+  <div class="hero-count">
+    <div class="avatar-stack">
+      <div class="avatar avatar-1">JM</div>
+      <div class="avatar avatar-2">SR</div>
+      <div class="avatar avatar-3">AL</div>
+      <div class="avatar avatar-4">TC</div>
+    </div>
+    <span><strong>2,400+</strong> homeowners on the waitlist</span>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how">
+  <div class="section-label">How it works</div>
+  <h2 class="section-headline">From bare walls to <em>dream spa</em> in three steps</h2>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Scan your room</div>
+      <p class="step-body">Open MySpa on your iPhone Pro and slowly pan around your bathroom. Our AR engine uses LiDAR to capture every wall, window, and surface with millimeter precision.</p>
+      <span class="step-tag">LiDAR · ARKit · RoomPlan</span>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Design your spa</div>
+      <p class="step-body">Your room appears in 3D — accurately dimensioned and ready to design. Drag and drop vanities, soaking tubs, walk-in showers, and fixtures until every inch is perfect.</p>
+      <span class="step-tag">3D Editor · Drag & Drop</span>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Shop at real prices</div>
+      <p class="step-body">Every fixture shows live pricing from Home Depot, Lowe's, and Wayfair. Add to your cart and check out — or share your design with your contractor and get to work.</p>
+      <span class="step-tag">Live Pricing · Instant Checkout</span>
+    </div>
+  </div>
+</section>
+
+<!-- Feature marquee -->
+<section id="features">
+  <div class="feature-track" id="feature-track">
+    <span class="feature-item"><span class="feature-dot"></span>LiDAR room scanning</span>
+    <span class="feature-item"><span class="feature-dot"></span>Millimeter-accurate dimensions</span>
+    <span class="feature-item"><span class="feature-dot"></span>3D drag & drop editor</span>
+    <span class="feature-item"><span class="feature-dot"></span>Live Home Depot pricing</span>
+    <span class="feature-item"><span class="feature-dot"></span>Live Lowe's pricing</span>
+    <span class="feature-item"><span class="feature-dot"></span>Wayfair integration</span>
+    <span class="feature-item"><span class="feature-dot"></span>Save & share designs</span>
+    <span class="feature-item"><span class="feature-dot"></span>Contractor mode</span>
+    <span class="feature-item"><span class="feature-dot"></span>iOS & web app</span>
+    <span class="feature-item"><span class="feature-dot"></span>Multi-angle scanning</span>
+    <span class="feature-item"><span class="feature-dot"></span>LiDAR room scanning</span>
+    <span class="feature-item"><span class="feature-dot"></span>Millimeter-accurate dimensions</span>
+    <span class="feature-item"><span class="feature-dot"></span>3D drag & drop editor</span>
+    <span class="feature-item"><span class="feature-dot"></span>Live Home Depot pricing</span>
+    <span class="feature-item"><span class="feature-dot"></span>Live Lowe's pricing</span>
+    <span class="feature-item"><span class="feature-dot"></span>Wayfair integration</span>
+    <span class="feature-item"><span class="feature-dot"></span>Save & share designs</span>
+    <span class="feature-item"><span class="feature-dot"></span>Contractor mode</span>
+    <span class="feature-item"><span class="feature-dot"></span>iOS & web app</span>
+    <span class="feature-item"><span class="feature-dot"></span>Multi-angle scanning</span>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section id="proof">
+  <div class="section-label">Early feedback</div>
+  <h2 class="section-headline">What our <em>beta users</em> are saying</h2>
+
+  <div class="testimonials reveal">
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"I've been planning my master bathroom renovation for two years. MySpa helped me finalize the layout in an afternoon — and I saved $3,000 by catching a fixture overlap before demo day."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:#6b5a4e">JM</div>
+        <div>
+          <div class="testimonial-name">Jessica M.</div>
+          <div class="testimonial-role">Homeowner · Austin, TX</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"As a contractor, I used to spend hours doing manual measurements and hand-drawing plans. MySpa does it in 60 seconds. I've already shown it to every client I have."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:#8b7355">RK</div>
+        <div>
+          <div class="testimonial-name">Ryan K.</div>
+          <div class="testimonial-role">General Contractor · Denver, CO</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"The real-time pricing is a game changer. I could see exactly what my dream bathroom would cost and adjust in real time. Ended up with something even better than I imagined."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:#7a6a5a">SL</div>
+        <div>
+          <div class="testimonial-name">Sarah L.</div>
+          <div class="testimonial-role">Interior Designer · NYC</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Retailers -->
+<section id="retailers">
+  <div class="retailers-label">Shop real products at real prices from</div>
+  <div class="retailer-logos reveal">
+    <div class="retailer-logo hd">Home Depot</div>
+    <div class="retailer-plus">+</div>
+    <div class="retailer-logo lw">Lowe's</div>
+    <div class="retailer-plus">+</div>
+    <div class="retailer-logo wf">Wayfair</div>
+  </div>
+</section>
+
+<!-- Waitlist CTA -->
+<section id="waitlist">
+  <div class="waitlist-bg"></div>
+  <div class="section-label" style="justify-content:center">Early access</div>
+  <h2 class="waitlist-headline">Be first to design your <em>perfect bathroom</em></h2>
+  <p class="waitlist-sub">Join 2,400+ homeowners on the waitlist. Free early access when we launch.</p>
+
+  <div class="hero-form reveal" id="waitlist-form" style="justify-content:center">
+    <input class="hero-input" type="email" id="waitlist-email" placeholder="Enter your email address"/>
+    <button class="hero-btn" onclick="joinWaitlist('waitlist')">Reserve My Spot</button>
+  </div>
+  <div class="success-msg" id="waitlist-success" style="display:none;margin:16px auto 0">You're on the list — we'll reach out when we launch.</div>
+  <p style="font-size:11px;color:var(--text3);margin-top:16px;position:relative;z-index:2">No spam. No credit card. Just early access.</p>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">MySpa</div>
+  <div class="footer-links">
+    <a href="#how">How it works</a>
+    <a href="mailto:hello@myspa.design">Contact</a>
+    <a href="#">Privacy</a>
+  </div>
+  <div class="footer-copy">© 2026 MySpa. All rights reserved.</div>
+</footer>
+
+<script>
+/* ── Custom cursor ── */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  }, 60);
+});
+
+/* ── Scroll reveal ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ── Waitlist ── */
+function joinWaitlist(source) {
+  const emailEl = document.getElementById(source === 'hero' ? 'hero-email' : 'waitlist-email');
+  const formEl = document.getElementById(source === 'hero' ? 'hero-form' : 'waitlist-form');
+  const successEl = document.getElementById(source === 'hero' ? 'hero-success' : 'waitlist-success');
+  const email = emailEl.value.trim();
+
+  if (!email || !email.includes('@')) {
+    emailEl.style.outline = '1px solid rgba(224,85,85,0.5)';
+    setTimeout(() => emailEl.style.outline = '', 1500);
+    return;
+  }
+
+  // Store locally (replace with your email service — Mailchimp, ConvertKit, etc.)
+  const list = JSON.parse(localStorage.getItem('myspa_waitlist') || '[]');
+  if (!list.includes(email)) { list.push(email); localStorage.setItem('myspa_waitlist', JSON.stringify(list)); }
+
+  formEl.style.display = 'none';
+  successEl.style.display = 'block';
+
+  // TODO: POST to your email collection endpoint
+  // fetch('https://your-api.com/waitlist', { method: 'POST', body: JSON.stringify({ email }), headers: { 'Content-Type': 'application/json' } });
+  console.log('Waitlist signup:', email);
+}
+
+/* ── Enter key on inputs ── */
+['hero-email','waitlist-email'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if(e.key === 'Enter') joinWaitlist(id.includes('hero') ? 'hero' : 'waitlist');
+  });
+});
+</script>
+</body>
+</html>
