@@ -50,6 +50,19 @@ nav{
   transition:opacity 0.2s;
 }
 .nav-cta:hover{opacity:0.88}
+.editor-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:transparent;color:var(--gold);
+  border:0.5px solid var(--gold-mid);
+  padding:14px 28px;border-radius:32px;font-size:12px;
+  font-family:'DM Sans',sans-serif;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;transition:all 0.25s;text-decoration:none;
+  margin-top:16px;
+}
+.editor-btn:hover{background:var(--gold-dim);border-color:var(--gold)}
+.editor-btn-arrow{transition:transform 0.2s}
+.editor-btn:hover .editor-btn-arrow{transform:translateX(4px)}
 
 /* ── Hero ── */
 #hero{
@@ -319,6 +332,10 @@ footer{
   </div>
   <div class="success-msg" id="hero-success">You're on the list — we'll be in touch soon.</div>
 
+  <a class="editor-btn" href="/editor.html" style="position:relative;z-index:2;animation:fadeUp 0.8s 0.55s ease both">
+    Try the 3D Editor now <span class="editor-btn-arrow">→</span>
+  </a>
+
   <div class="hero-count">
     <div class="avatar-stack">
       <div class="avatar avatar-1">JM</div>
@@ -360,9 +377,10 @@ footer{
       <span class="step-tag">Live Pricing · Instant Checkout</span>
     </div>
   </div>
+  <div style="text-align:center;margin-top:48px">
+    <a class="editor-btn reveal" href="/editor.html">Launch the 3D editor <span class="editor-btn-arrow">→</span></a>
+  </div>
 </section>
-
-<!-- Feature marquee -->
 <section id="features">
   <div class="feature-track" id="feature-track">
     <span class="feature-item"><span class="feature-dot"></span>LiDAR room scanning</span>
