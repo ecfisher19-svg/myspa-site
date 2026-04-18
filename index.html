@@ -486,7 +486,14 @@ footer{
   <div class="footer-copy">© 2026 MySpa. All rights reserved.</div>
 </footer>
 
-<script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* ─── Supabase config — replace both values below ─── */
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 /* ── Custom cursor ── */
 const cursor = document.getElementById('cursor');
 const ring = document.getElementById('cursor-ring');
@@ -506,12 +513,6 @@ const observer = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 /* ── Waitlist ── */
-// ─── Supabase config ───────────────────────────────────────────────
-// Replace these two values with your own from Supabase:
-// Settings → API → Project URL and publishable key
-const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
-
 async function joinWaitlist(source) {
   const emailEl = document.getElementById(source === 'hero' ? 'hero-email' : 'waitlist-email');
   const formEl = document.getElementById(source === 'hero' ? 'hero-form' : 'waitlist-form');
@@ -524,30 +525,16 @@ async function joinWaitlist(source) {
     return;
   }
 
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ email, source: 'landing_page' })
-    });
+  const { error } = await supabase.from('waitlist').insert({ email, source: 'landing_page' });
 
-    if (res.ok || res.status === 409) {
-      formEl.style.display = 'none';
-      successEl.style.display = 'block';
-    } else {
-      const errorText = await res.text();
-      console.error('Supabase error:', res.status, errorText);
-      throw new Error('Signup failed');
-    }
-  } catch(err) {
-    console.error('Waitlist error:', err);
+  if (!error || error.code === '23505') {
+    formEl.style.display = 'none';
+    successEl.style.display = 'block';
+  } else {
+    console.error('Waitlist error:', error);
     emailEl.placeholder = 'Something went wrong — try again';
     emailEl.style.outline = '1px solid rgba(224,85,85,0.5)';
-    setTimeout(() => emailEl.style.outline = '', 2000);
+    setTimeout(() => { emailEl.style.outline = ''; emailEl.placeholder = 'Enter your email address'; }, 2000);
   }
 }
 
@@ -557,6 +544,9 @@ async function joinWaitlist(source) {
     if(e.key === 'Enter') joinWaitlist(id.includes('hero') ? 'hero' : 'waitlist');
   });
 });
+
+/* Expose to global scope for onclick buttons */
+window.joinWaitlist = joinWaitlist;
 </script>
 </body>
 </html>
