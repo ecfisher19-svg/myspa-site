@@ -303,9 +303,13 @@ footer{
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="#proof">Reviews</a>
+    <a href="/contractor.html">For Contractors</a>
     <a href="#waitlist">Early access</a>
   </div>
-  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+  <div style="display:flex;gap:10px;align-items:center">
+    <a href="/auth.html" style="font-size:11px;color:var(--text2);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;padding:8px 16px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">Sign In</a>
+    <button class="nav-cta" onclick="window.location.href='/editor.html'">Try the Editor</button>
+  </div>
 </nav>
 
 <!-- Hero -->
@@ -457,6 +461,42 @@ footer{
     <div class="retailer-logo lw">Lowe's</div>
     <div class="retailer-plus">+</div>
     <div class="retailer-logo wf">Wayfair</div>
+  </div>
+</section>
+
+<!-- Contractor CTA -->
+<section style="padding:80px 48px;border-top:0.5px solid var(--border)">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+    <div>
+      <div class="section-label">For Contractors</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,52px);font-weight:300;color:var(--cream);line-height:1.1;margin-bottom:16px">
+        Win more jobs.<br><em style="color:var(--gold)">Browse open designs.</em>
+      </h2>
+      <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:28px;font-weight:300">
+        Homeowners share their MySpa designs publicly so contractors can bid on them. Browse real bathroom projects in your area, submit your price and timeline, and grow your business.
+      </p>
+      <a href="/contractor.html" style="display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--bg);text-decoration:none;padding:13px 28px;border-radius:24px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+        Open Contractor Portal →
+      </a>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:22px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--gold);font-weight:300">3D</div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px">View designs in 3D before bidding</div>
+      </div>
+      <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:22px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--gold);font-weight:300">$0</div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px">Free to join and bid</div>
+      </div>
+      <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:22px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--gold);font-weight:300">AI</div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px">Accurate room dimensions included</div>
+      </div>
+      <div style="background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:22px;text-align:center">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--gold);font-weight:300">⚡</div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px">Instant notifications on new projects</div>
+      </div>
+    </div>
   </div>
 </section>
 
