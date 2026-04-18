@@ -506,7 +506,13 @@ const observer = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 /* ── Waitlist ── */
-function joinWaitlist(source) {
+// ─── Supabase config ───────────────────────────────────────────────
+// Replace these two values with your own from Supabase:
+// Settings → API → Project URL and anon public key
+const SUPABASE_URL = 'nylbgdizzlpsaacrbsae';
+const SUPABASE_ANON_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+
+async function joinWaitlist(source) {
   const emailEl = document.getElementById(source === 'hero' ? 'hero-email' : 'waitlist-email');
   const formEl = document.getElementById(source === 'hero' ? 'hero-form' : 'waitlist-form');
   const successEl = document.getElementById(source === 'hero' ? 'hero-success' : 'waitlist-success');
@@ -518,16 +524,30 @@ function joinWaitlist(source) {
     return;
   }
 
-  // Store locally (replace with your email service — Mailchimp, ConvertKit, etc.)
-  const list = JSON.parse(localStorage.getItem('myspa_waitlist') || '[]');
-  if (!list.includes(email)) { list.push(email); localStorage.setItem('myspa_waitlist', JSON.stringify(list)); }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ email, source: 'landing_page' })
+    });
 
-  formEl.style.display = 'none';
-  successEl.style.display = 'block';
-
-  // TODO: POST to your email collection endpoint
-  // fetch('https://your-api.com/waitlist', { method: 'POST', body: JSON.stringify({ email }), headers: { 'Content-Type': 'application/json' } });
-  console.log('Waitlist signup:', email);
+    if (res.ok || res.status === 409) {
+      formEl.style.display = 'none';
+      successEl.style.display = 'block';
+    } else {
+      throw new Error('Signup failed');
+    }
+  } catch(err) {
+    console.error('Waitlist error:', err);
+    emailEl.placeholder = 'Something went wrong — try again';
+    emailEl.style.outline = '1px solid rgba(224,85,85,0.5)';
+    setTimeout(() => emailEl.style.outline = '', 2000);
+  }
 }
 
 /* ── Enter key on inputs ── */
