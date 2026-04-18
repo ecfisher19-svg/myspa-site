@@ -508,9 +508,9 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 /* ── Waitlist ── */
 // ─── Supabase config ───────────────────────────────────────────────
 // Replace these two values with your own from Supabase:
-// Settings → API → Project URL and anon public key
+// Settings → API → Project URL and publishable key
 const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
 
 async function joinWaitlist(source) {
   const emailEl = document.getElementById(source === 'hero' ? 'hero-email' : 'waitlist-email');
@@ -529,8 +529,7 @@ async function joinWaitlist(source) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify({ email, source: 'landing_page' })
@@ -540,6 +539,8 @@ async function joinWaitlist(source) {
       formEl.style.display = 'none';
       successEl.style.display = 'block';
     } else {
+      const errorText = await res.text();
+      console.error('Supabase error:', res.status, errorText);
       throw new Error('Signup failed');
     }
   } catch(err) {

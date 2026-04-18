@@ -34,6 +34,15 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .logo{display:flex;align-items:baseline;gap:8px}
 .logo-mark{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);letter-spacing:0.08em}
 .logo-tag{font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+.back-home{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--text3);letter-spacing:0.08em;
+  text-transform:uppercase;text-decoration:none;
+  transition:color 0.2s;padding:6px 0;
+}
+.back-home:hover{color:var(--gold)}
+.back-home-arrow{font-size:14px;transition:transform 0.2s}
+.back-home:hover .back-home-arrow{transform:translateX(-3px)}
 
 #toolbar{display:flex;gap:6px}
 .tool-btn{
@@ -326,9 +335,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
     <!-- Header -->
     <div id="header">
-      <div class="logo">
-        <span class="logo-mark">MySpa</span>
-        <span class="logo-tag">Design Studio</span>
+      <div style="display:flex;align-items:center;gap:20px">
+        <a class="back-home" href="/index.html"><span class="back-home-arrow">←</span> Home</a>
+        <div class="logo">
+          <span class="logo-mark">MySpa</span>
+          <span class="logo-tag">Design Studio</span>
+        </div>
       </div>
       <div id="toolbar">
         <button class="tool-btn active" id="btn-move">Move</button>
@@ -384,6 +396,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     <div class="sidebar-brand">
       <h1>MySpa</h1>
       <p>Bathroom Design Studio</p>
+      <a class="back-home" href="/index.html" style="margin-top:8px"><span class="back-home-arrow">←</span> Back to home</a>
     </div>
 
     <div class="room-stats">
