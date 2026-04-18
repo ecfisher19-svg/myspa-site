@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#191918;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:24px;text-align:center;overflow:hidden;
+}
+
+/* ── Background ── */
+.bg-lines{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-line{position:absolute;top:0;bottom:0;width:0.5px;background:linear-gradient(to bottom,transparent,rgba(201,169,110,0.06),transparent)}
+.bg-line:nth-child(1){left:20%}
+.bg-line:nth-child(2){left:40%}
+.bg-line:nth-child(3){left:60%}
+.bg-line:nth-child(4){left:80%}
+.bg-glow{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(201,169,110,0.06),transparent 70%);pointer-events:none;z-index:0}
+
+/* ── Content ── */
+.content{position:relative;z-index:2;max-width:520px}
+
+.check-circle{
+  width:72px;height:72px;border-radius:50%;
+  border:0.5px solid var(--gold-mid);background:var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 28px;
+  animation:scaleIn 0.5s ease both;
+}
+.check-circle svg{width:28px;height:28px;stroke:var(--gold);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.check-path{stroke-dasharray:40;stroke-dashoffset:40;animation:drawCheck 0.4s 0.3s ease forwards}
+
+@keyframes scaleIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes drawCheck{to{stroke-dashoffset:0}}
+
+.eyebrow{
+  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;justify-content:center;
+  animation:fadeUp 0.6s 0.2s ease both;
+}
+.eyebrow::before,.eyebrow::after{content:'';width:24px;height:0.5px;background:var(--gold-mid)}
+
+.headline{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,6vw,56px);font-weight:300;
+  color:var(--text);line-height:1.05;margin-bottom:16px;
+  animation:fadeUp 0.6s 0.3s ease both;
+}
+.headline em{font-style:italic;color:var(--gold)}
+
+.subline{
+  font-size:15px;color:var(--text2);line-height:1.7;font-weight:300;
+  margin-bottom:36px;animation:fadeUp 0.6s 0.4s ease both;
+}
+
+.user-name{color:var(--gold);font-weight:500}
+
+.cta-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--gold);color:var(--bg);text-decoration:none;
+  padding:15px 32px;border-radius:32px;font-size:13px;
+  font-family:'DM Sans',sans-serif;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:opacity 0.2s;margin-bottom:16px;
+  animation:fadeUp 0.6s 0.5s ease both;
+}
+.cta-btn:hover{opacity:0.88}
+.cta-arrow{transition:transform 0.2s}
+.cta-btn:hover .cta-arrow{transform:translateX(4px)}
+
+.secondary-link{
+  display:block;font-size:12px;color:var(--text3);text-decoration:none;
+  letter-spacing:0.04em;transition:color 0.2s;
+  animation:fadeUp 0.6s 0.6s ease both;
+}
+.secondary-link:hover{color:var(--gold)}
+
+.logo{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;
+  color:var(--gold);letter-spacing:0.1em;text-decoration:none;z-index:10;
+}
+
+/* ── Stats strip ── */
+.stats{
+  display:flex;gap:32px;justify-content:center;margin-top:48px;
+  animation:fadeUp 0.6s 0.7s ease both;
+}
+.stat{text-align:center}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);font-weight:300}
+.stat-label{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="bg-lines">
+  <div class="bg-line"></div><div class="bg-line"></div>
+  <div class="bg-line"></div><div class="bg-line"></div>
+</div>
+<div class="bg-glow"></div>
+
+<a class="logo" href="/index.html">MySpa</a>
+
+<div class="content">
+  <div class="check-circle">
+    <svg viewBox="0 0 24 24">
+      <polyline class="check-path" points="4 12 9 17 20 7"/>
+    </svg>
+  </div>
+
+  <div class="eyebrow">Profile Confirmed</div>
+
+  <h1 class="headline">
+    Welcome to<br><em>MySpa</em>, <span class="user-name" id="user-name">Designer</span>
+  </h1>
+
+  <p class="subline">
+    Your designer profile is live and ready. Scan your bathroom, drag in your dream fixtures, and see exactly what your spa renovation will look like — before a single tile is laid.
+  </p>
+
+  <a class="cta-btn" href="/editor.html">
+    Start Designing <span class="cta-arrow">→</span>
+  </a>
+
+  <a class="secondary-link" href="/index.html">Back to MySpa home</a>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">3D</div>
+      <div class="stat-label">Real-time editor</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">$0</div>
+      <div class="stat-label">Free to design</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">17+</div>
+      <div class="stat-label">Spa fixtures</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+/* ── Handle email confirmation token ── */
+const params = new URLSearchParams(window.location.search);
+const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+
+/* Supabase puts the token in the URL hash on redirect */
+const accessToken = hashParams.get('access_token');
+const refreshToken = hashParams.get('refresh_token');
+const type = hashParams.get('type');
+
+if (accessToken && type === 'signup') {
+  /* Set the session from the confirmation link */
+  const { data, error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken
+  });
+
+  if (data?.user) {
+    const name = data.user.user_metadata?.full_name?.split(' ')[0] || 'Designer';
+    document.getElementById('user-name').textContent = name;
+
+    /* Update CTA based on role */
+    const role = data.user.user_metadata?.role;
+    if (role === 'contractor') {
+      document.querySelector('.headline em').nextSibling.textContent = ', ';
+      document.querySelector('.cta-btn').href = '/contractor.html';
+      document.querySelector('.cta-btn').innerHTML = 'Open Contractor Portal <span class="cta-arrow">→</span>';
+      document.querySelector('.subline').textContent = 'Your contractor profile is live. Browse open bathroom designs in your area and start submitting bids.';
+    }
+  }
+} else {
+  /* Check existing session */
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    const name = session.user.user_metadata?.full_name?.split(' ')[0] || 'Designer';
+    document.getElementById('user-name').textContent = name;
+  }
+}
+</script>
+</body>
+</html>

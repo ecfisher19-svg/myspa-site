@@ -227,7 +227,7 @@ window.signUp = async () => {
     email, password,
     options: {
       data: { full_name: name, role: selectedRole },
-      emailRedirectTo: `${window.location.origin}/auth.html`
+      emailRedirectTo: `${window.location.origin}/confirmed.html`
     }
   });
 
