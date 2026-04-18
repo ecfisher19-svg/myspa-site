@@ -225,7 +225,10 @@ window.signUp = async () => {
 
   const { data, error } = await supabase.auth.signUp({
     email, password,
-    options: { data: { full_name: name, role: selectedRole } }
+    options: {
+      data: { full_name: name, role: selectedRole },
+      emailRedirectTo: `${window.location.origin}/auth.html`
+    }
   });
 
   if (error) {
@@ -234,23 +237,33 @@ window.signUp = async () => {
     return;
   }
 
-  // Insert into users table
+  // Insert into users table using service role via RPC or direct insert
   if (data.user) {
-    await supabase.from('users').insert({
+    const { error: insertError } = await supabase.from('users').upsert({
       id: data.user.id,
       email,
       full_name: name,
       role: selectedRole
-    });
+    }, { onConflict: 'id' });
+
+    if (insertError) console.error('User insert error:', insertError);
 
     // If contractor, create contractor profile
     if (selectedRole === 'contractor') {
-      await supabase.from('contractors').insert({ user_id: data.user.id });
+      await supabase.from('contractors').upsert({
+        user_id: data.user.id,
+        business_name: '',
+      }, { onConflict: 'user_id' });
+    }
+
+    // If session exists immediately (email confirm off), redirect
+    if (data.session) {
+      window.location.href = selectedRole === 'contractor' ? '/contractor.html' : '/editor.html';
+    } else {
+      showSuccess('Check your email to verify your account, then sign in.');
+      btn.disabled = false; btn.textContent = 'Create Account';
     }
   }
-
-  showSuccess('Account created! Check your email to verify, then sign in.');
-  btn.disabled = false; btn.textContent = 'Create Account';
 };
 
 /* ── Forgot Password ── */
