@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — Contractor Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+  --danger:#e05555;--success:#5db888;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Nav ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:60px;
+  border-bottom:0.5px solid var(--border);
+  background:var(--surface);
+}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--gold);letter-spacing:0.08em;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-user{font-size:12px;color:var(--text3)}
+.nav-btn{
+  background:transparent;border:0.5px solid var(--border2);color:var(--text2);
+  padding:7px 16px;border-radius:20px;font-size:11px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;
+  transition:all 0.2s;text-decoration:none;display:inline-block;
+}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+.nav-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── Layout ── */
+.container{max-width:1100px;margin:0 auto;padding:40px 24px}
+.page-header{margin-bottom:40px}
+.page-eyebrow{font-size:10px;color:var(--gold);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--text);line-height:1.1}
+.page-title em{font-style:italic;color:var(--gold)}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+
+/* ── Profile card ── */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.card-title{font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:0.5px;background:var(--border)}
+
+.profile-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--gold-dim);border:0.5px solid var(--gold-mid);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);
+  margin-bottom:14px;
+}
+.profile-name{font-size:16px;font-weight:500;color:var(--text);margin-bottom:2px}
+.profile-email{font-size:12px;color:var(--text3)}
+.verified-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#5db88822;border:0.5px solid #5db88844;
+  border-radius:20px;padding:3px 10px;font-size:10px;color:var(--success);
+  letter-spacing:0.06em;text-transform:uppercase;margin-top:8px;
+}
+.pending-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#c9a96e22;border:0.5px solid var(--gold-mid);
+  border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gold);
+  letter-spacing:0.06em;text-transform:uppercase;margin-top:8px;
+}
+
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.stat{background:var(--surface2);border-radius:10px;padding:12px;text-align:center}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);font-weight:300}
+.stat-label{font-size:10px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+
+/* ── Form elements ── */
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-input{
+  width:100%;background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
+}
+.form-input:focus{border-color:var(--gold-mid)}
+.form-input::placeholder{color:var(--text3)}
+textarea.form-input{resize:vertical;min-height:80px}
+
+.save-btn{
+  background:var(--gold);color:var(--bg);border:none;border-radius:8px;
+  padding:10px 24px;font-size:12px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;
+  cursor:pointer;transition:opacity 0.2s;
+}
+.save-btn:hover{opacity:0.88}
+
+/* ── Designs/Bids ── */
+.design-card{
+  background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:12px;padding:18px;margin-bottom:10px;transition:border-color 0.2s;
+}
+.design-card:hover{border-color:var(--border2)}
+.design-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.design-name{font-size:14px;font-weight:500;color:var(--text)}
+.design-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.design-estimate{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)}
+.design-items{font-size:11px;color:var(--text3);margin-top:2px}
+
+.bid-form{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);display:none}
+.bid-form.show{display:block}
+.bid-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bid-btn{
+  background:var(--gold-dim);color:var(--gold);border:0.5px solid var(--gold-mid);
+  border-radius:8px;padding:8px 16px;font-size:11px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
+  transition:all 0.2s;margin-top:8px;
+}
+.bid-btn:hover{background:var(--gold);color:var(--bg)}
+.toggle-bid-btn{
+  background:transparent;color:var(--text3);border:0.5px solid var(--border);
+  border-radius:8px;padding:7px 14px;font-size:11px;font-family:'DM Sans',sans-serif;
+  letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;
+}
+.toggle-bid-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
+
+.bid-status{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:10px;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px;
+}
+.bid-status.pending{background:#c9a96e22;color:var(--gold);border:0.5px solid var(--gold-mid)}
+.bid-status.accepted{background:#5db88822;color:var(--success);border:0.5px solid #5db88844}
+.bid-status.declined{background:#e0555522;color:var(--danger);border:0.5px solid #e0555544}
+
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px;line-height:1.8}
+.empty-icon{font-family:'Cormorant Garamond',serif;font-size:48px;color:var(--border2);margin-bottom:12px;font-weight:300}
+
+.tabs{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:20px}
+.tab{flex:1;padding:10px;font-size:11px;text-align:center;cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;transition:all 0.2s;letter-spacing:0.08em;text-transform:uppercase;max-width:160px}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:0.5px solid var(--gold-mid);border-radius:8px;padding:10px 18px;font-size:12px;color:var(--gold);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+
+#loading{text-align:center;padding:80px;color:var(--text3);font-size:13px}
+#not-contractor{display:none;text-align:center;padding:80px 40px}
+#not-contractor h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--text);margin-bottom:12px}
+#not-contractor p{font-size:13px;color:var(--text3);line-height:1.7;max-width:400px;margin:0 auto 24px}
+#not-contractor a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/index.html">MySpa</a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user"></span>
+    <a class="nav-btn" href="/editor.html">3D Editor</a>
+    <button class="nav-btn danger" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div id="loading">Loading your portal...</div>
+
+<div id="not-contractor">
+  <h2>Contractor Portal</h2>
+  <p>This area is for contractors only. Sign up as a contractor to access open bathroom designs and submit bids.</p>
+  <a href="/auth.html">Create a contractor account →</a>
+</div>
+
+<div id="main-content" style="display:none">
+  <div class="container">
+    <div class="page-header">
+      <div class="page-eyebrow">Contractor Portal</div>
+      <h1 class="page-title">Welcome back, <em id="contractor-name">...</em></h1>
+    </div>
+
+    <div class="grid">
+      <!-- Left: Profile -->
+      <div>
+        <div class="card">
+          <div class="card-title">Your Profile</div>
+          <div class="profile-avatar" id="profile-initials">?</div>
+          <div class="profile-name" id="profile-name"></div>
+          <div class="profile-email" id="profile-email"></div>
+          <div id="profile-badge" class="pending-badge">Pending Verification</div>
+
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat-val" id="stat-bids">0</div>
+              <div class="stat-label">Bids sent</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val" id="stat-wins">0</div>
+              <div class="stat-label">Jobs won</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Business Info</div>
+          <div class="form-group">
+            <label class="form-label">Business Name</label>
+            <input class="form-input" id="business-name" placeholder="Your company name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">License Number</label>
+            <input class="form-input" id="license-number" placeholder="State license #"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Service Areas</label>
+            <input class="form-input" id="service-area" placeholder="e.g. Austin TX, Dallas TX"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">About Your Business</label>
+            <textarea class="form-input" id="bio" placeholder="Tell designers about your experience..."></textarea>
+          </div>
+          <button class="save-btn" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+
+      <!-- Right: Designs & Bids -->
+      <div>
+        <div class="tabs">
+          <div class="tab active" id="tab-open" onclick="switchTab('open')">Open Designs</div>
+          <div class="tab" id="tab-mybids" onclick="switchTab('mybids')">My Bids</div>
+        </div>
+
+        <div id="panel-open">
+          <div id="open-designs-list"><div class="empty-state"><div class="empty-icon">◯</div>Loading open designs...</div></div>
+        </div>
+
+        <div id="panel-mybids" style="display:none">
+          <div id="my-bids-list"><div class="empty-state"><div class="empty-icon">◯</div>Loading your bids...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let currentUser = null;
+let contractorProfile = null;
+let myBids = [];
+
+/* ── Init ── */
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) { window.location.href = '/auth.html'; }
+
+currentUser = session.user;
+document.getElementById('nav-user').textContent = currentUser.email;
+
+// Check if contractor
+const { data: userData } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
+
+if (!userData || userData.role !== 'contractor') {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('not-contractor').style.display = 'block';
+} else {
+  await loadContractorProfile();
+  await loadOpenDesigns();
+  await loadMyBids();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+}
+
+/* ── Load contractor profile ── */
+async function loadContractorProfile() {
+  const { data } = await supabase.from('contractors').select('*').eq('user_id', currentUser.id).single();
+  contractorProfile = data;
+
+  const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+
+  document.getElementById('contractor-name').textContent = name;
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-email').textContent = currentUser.email;
+  document.getElementById('profile-initials').textContent = initials;
+
+  if (data?.verified) {
+    document.getElementById('profile-badge').className = 'verified-badge';
+    document.getElementById('profile-badge').textContent = '✓ Verified';
+  }
+
+  if (data?.business_name) document.getElementById('business-name').value = data.business_name;
+  if (data?.license_number) document.getElementById('license-number').value = data.license_number;
+  if (data?.service_area) document.getElementById('service-area').value = data.service_area?.join(', ') || '';
+  if (data?.portfolio?.bio) document.getElementById('bio').value = data.portfolio.bio;
+}
+
+/* ── Load open designs ── */
+async function loadOpenDesigns() {
+  const { data: designs } = await supabase
+    .from('designs')
+    .select('*, users(full_name, email)')
+    .eq('is_public', true)
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('open-designs-list');
+
+  if (!designs || !designs.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◯</div>No open designs yet.<br>Check back soon as more designers share their projects.</div>';
+    return;
+  }
+
+  list.innerHTML = designs.map(d => `
+    <div class="design-card">
+      <div class="design-card-header">
+        <div>
+          <div class="design-name">${d.name || 'Untitled Design'}</div>
+          <div class="design-meta">By ${d.users?.full_name || 'Anonymous'} · ${new Date(d.created_at).toLocaleDateString()}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="design-estimate">$${(d.total_estimate || 0).toLocaleString()}</div>
+          <div class="design-items">Fixture budget</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a href="/editor.html?design=${d.id}" style="font-size:11px;color:var(--gold);text-decoration:none;letter-spacing:0.04em">View in 3D Editor →</a>
+        <button class="toggle-bid-btn" onclick="toggleBidForm('${d.id}')">Submit Bid</button>
+      </div>
+      <div class="bid-form" id="bid-form-${d.id}">
+        <div class="bid-row">
+          <div class="form-group">
+            <label class="form-label">Your Bid ($)</label>
+            <input class="form-input" type="number" id="bid-amount-${d.id}" placeholder="e.g. 8500"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timeline (days)</label>
+            <input class="form-input" type="number" id="bid-timeline-${d.id}" placeholder="e.g. 21"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message to Designer</label>
+          <textarea class="form-input" id="bid-message-${d.id}" placeholder="Tell the designer why you're the right contractor for this project..."></textarea>
+        </div>
+        <button class="bid-btn" onclick="submitBid('${d.id}')">Submit Bid</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── Load my bids ── */
+async function loadMyBids() {
+  const { data: bids } = await supabase
+    .from('bids')
+    .select('*, designs(name, total_estimate, users(full_name))')
+    .eq('contractor_id', contractorProfile?.id)
+    .order('created_at', { ascending: false });
+
+  myBids = bids || [];
+  const wins = myBids.filter(b => b.status === 'accepted').length;
+  document.getElementById('stat-bids').textContent = myBids.length;
+  document.getElementById('stat-wins').textContent = wins;
+
+  const list = document.getElementById('my-bids-list');
+
+  if (!myBids.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◯</div>No bids submitted yet.<br>Browse open designs and submit your first bid.</div>';
+    return;
+  }
+
+  list.innerHTML = myBids.map(b => `
+    <div class="design-card">
+      <div class="design-card-header">
+        <div>
+          <div class="design-name">${b.designs?.name || 'Untitled Design'}</div>
+          <div class="design-meta">Designer: ${b.designs?.users?.full_name || 'Anonymous'}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="design-estimate">$${(b.amount || 0).toLocaleString()}</div>
+          <div class="design-items">${b.timeline_days} day timeline</div>
+        </div>
+      </div>
+      <div class="bid-status ${b.status}">${b.status}</div>
+      ${b.message ? `<p style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">${b.message}</p>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ── Save profile ── */
+window.saveProfile = async () => {
+  const business_name = document.getElementById('business-name').value.trim();
+  const license_number = document.getElementById('license-number').value.trim();
+  const service_area = document.getElementById('service-area').value.split(',').map(s => s.trim()).filter(Boolean);
+  const bio = document.getElementById('bio').value.trim();
+
+  const { error } = await supabase.from('contractors').update({
+    business_name, license_number, service_area, portfolio: { bio }
+  }).eq('user_id', currentUser.id);
+
+  if (error) toast('Error saving profile');
+  else toast('Profile saved!');
+};
+
+/* ── Toggle bid form ── */
+window.toggleBidForm = (designId) => {
+  const form = document.getElementById(`bid-form-${designId}`);
+  form.classList.toggle('show');
+};
+
+/* ── Submit bid ── */
+window.submitBid = async (designId) => {
+  if (!contractorProfile) { toast('Complete your profile first'); return; }
+  const amount = parseFloat(document.getElementById(`bid-amount-${designId}`).value);
+  const timeline_days = parseInt(document.getElementById(`bid-timeline-${designId}`).value);
+  const message = document.getElementById(`bid-message-${designId}`).value.trim();
+
+  if (!amount || !timeline_days) { toast('Please fill in bid amount and timeline'); return; }
+
+  const { error } = await supabase.from('bids').insert({
+    design_id: designId,
+    contractor_id: contractorProfile.id,
+    amount, timeline_days, message
+  });
+
+  if (error) toast('Error submitting bid — you may have already bid on this design');
+  else {
+    toast('Bid submitted!');
+    document.getElementById(`bid-form-${designId}`).classList.remove('show');
+    await loadMyBids();
+  }
+};
+
+/* ── Tab switching ── */
+window.switchTab = (tab) => {
+  document.getElementById('tab-open').classList.toggle('active', tab === 'open');
+  document.getElementById('tab-mybids').classList.toggle('active', tab === 'mybids');
+  document.getElementById('panel-open').style.display = tab === 'open' ? 'block' : 'none';
+  document.getElementById('panel-mybids').style.display = tab === 'mybids' ? 'block' : 'none';
+};
+
+/* ── Sign out ── */
+window.signOut = async () => {
+  await supabase.auth.signOut();
+  window.location.href = '/index.html';
+};
+
+/* ── Toast ── */
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

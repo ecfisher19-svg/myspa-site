@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+  --danger:#e05555;--success:#5db888;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.bg-lines{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-line{position:absolute;top:0;bottom:0;width:0.5px;background:linear-gradient(to bottom,transparent,rgba(201,169,110,0.06),transparent)}
+.bg-line:nth-child(1){left:20%}
+.bg-line:nth-child(2){left:40%}
+.bg-line:nth-child(3){left:60%}
+.bg-line:nth-child(4){left:80%}
+
+.auth-card{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:20px;padding:40px;width:100%;max-width:420px;
+  position:relative;z-index:2;
+}
+.auth-logo{
+  text-align:center;margin-bottom:32px;
+}
+.auth-logo a{
+  font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;
+  color:var(--gold);letter-spacing:0.1em;text-decoration:none;
+}
+.auth-logo p{font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px}
+
+.tabs{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:28px}
+.tab{
+  flex:1;padding:10px;font-size:11px;text-align:center;cursor:pointer;
+  color:var(--text3);border-bottom:1.5px solid transparent;
+  transition:all 0.2s;letter-spacing:0.08em;text-transform:uppercase;
+}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;display:block}
+.form-input{
+  width:100%;background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:8px;padding:12px 14px;color:var(--text);font-size:14px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
+}
+.form-input::placeholder{color:var(--text3)}
+.form-input:focus{border-color:var(--gold-mid)}
+
+.role-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.role-option{
+  background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:10px;padding:14px 12px;cursor:pointer;
+  transition:all 0.2s;text-align:center;
+}
+.role-option:hover{border-color:var(--border2)}
+.role-option.selected{border-color:var(--gold);background:var(--gold-dim)}
+.role-option input{display:none}
+.role-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.role-sub{font-size:10px;color:var(--text3);line-height:1.4}
+.role-option.selected .role-title{color:var(--gold)}
+
+.submit-btn{
+  width:100%;background:var(--gold);color:var(--bg);border:none;
+  border-radius:10px;padding:14px;font-size:13px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;
+  cursor:pointer;transition:opacity 0.2s;margin-top:8px;
+}
+.submit-btn:hover{opacity:0.88}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border)}
+.divider span{font-size:11px;color:var(--text3);letter-spacing:0.06em}
+
+.error-msg{background:#e0555522;border:0.5px solid #e0555544;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--danger);margin-bottom:16px;display:none}
+.success-msg{background:#5db88822;border:0.5px solid #5db88844;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--success);margin-bottom:16px;display:none}
+
+.back-link{text-align:center;margin-top:20px;font-size:12px;color:var(--text3)}
+.back-link a{color:var(--gold);text-decoration:none}
+.back-link a:hover{text-decoration:underline}
+
+.forgot{text-align:right;margin-top:4px}
+.forgot a{font-size:11px;color:var(--text3);text-decoration:none;transition:color 0.2s}
+.forgot a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="bg-lines">
+  <div class="bg-line"></div><div class="bg-line"></div>
+  <div class="bg-line"></div><div class="bg-line"></div>
+</div>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <a href="/index.html">MySpa</a>
+    <p>Bathroom Design Studio</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</div>
+    <div class="tab" id="tab-signup" onclick="switchTab('signup')">Create Account</div>
+  </div>
+
+  <div id="error-msg" class="error-msg"></div>
+  <div id="success-msg" class="success-msg"></div>
+
+  <!-- Sign In Form -->
+  <div id="form-signin">
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="signin-email" placeholder="you@example.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="signin-password" placeholder="Your password"/>
+      <div class="forgot"><a href="#" onclick="forgotPassword()">Forgot password?</a></div>
+    </div>
+    <button class="submit-btn" id="signin-btn" onclick="signIn()">Sign In</button>
+  </div>
+
+  <!-- Sign Up Form -->
+  <div id="form-signup" style="display:none">
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" type="text" id="signup-name" placeholder="Your full name"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="signup-email" placeholder="you@example.com"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="signup-password" placeholder="Min. 8 characters"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">I am a...</label>
+      <div class="role-select">
+        <div class="role-option selected" id="role-designer" onclick="selectRole('designer')">
+          <div class="role-title">Designer</div>
+          <div class="role-sub">I want to design my own bathroom</div>
+        </div>
+        <div class="role-option" id="role-contractor" onclick="selectRole('contractor')">
+          <div class="role-title">Contractor</div>
+          <div class="role-sub">I build and renovate bathrooms</div>
+        </div>
+      </div>
+    </div>
+    <button class="submit-btn" id="signup-btn" onclick="signUp()">Create Account</button>
+  </div>
+
+  <div class="back-link">
+    <a href="/index.html">← Back to MySpa</a>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let selectedRole = 'designer';
+
+/* ── Check if already logged in ── */
+const { data: { session } } = await supabase.auth.getSession();
+if (session) window.location.href = '/editor.html';
+
+/* ── Tab switching ── */
+window.switchTab = (tab) => {
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('form-signin').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  hideMessages();
+};
+
+/* ── Role selection ── */
+window.selectRole = (role) => {
+  selectedRole = role;
+  document.getElementById('role-designer').classList.toggle('selected', role === 'designer');
+  document.getElementById('role-contractor').classList.toggle('selected', role === 'contractor');
+};
+
+/* ── Sign In ── */
+window.signIn = async () => {
+  const email = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  const btn = document.getElementById('signin-btn');
+
+  if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showError(error.message);
+    btn.disabled = false; btn.textContent = 'Sign In';
+  } else {
+    window.location.href = '/editor.html';
+  }
+};
+
+/* ── Sign Up ── */
+window.signUp = async () => {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const btn = document.getElementById('signup-btn');
+
+  if (!name || !email || !password) { showError('Please fill in all fields.'); return; }
+  if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  const { data, error } = await supabase.auth.signUp({
+    email, password,
+    options: { data: { full_name: name, role: selectedRole } }
+  });
+
+  if (error) {
+    showError(error.message);
+    btn.disabled = false; btn.textContent = 'Create Account';
+    return;
+  }
+
+  // Insert into users table
+  if (data.user) {
+    await supabase.from('users').insert({
+      id: data.user.id,
+      email,
+      full_name: name,
+      role: selectedRole
+    });
+
+    // If contractor, create contractor profile
+    if (selectedRole === 'contractor') {
+      await supabase.from('contractors').insert({ user_id: data.user.id });
+    }
+  }
+
+  showSuccess('Account created! Check your email to verify, then sign in.');
+  btn.disabled = false; btn.textContent = 'Create Account';
+};
+
+/* ── Forgot Password ── */
+window.forgotPassword = async () => {
+  const email = document.getElementById('signin-email').value.trim();
+  if (!email) { showError('Enter your email address first.'); return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) showError(error.message);
+  else showSuccess('Password reset email sent — check your inbox.');
+};
+
+/* ── Helpers ── */
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('success-msg').style.display = 'none';
+}
+function showSuccess(msg) {
+  const el = document.getElementById('success-msg');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('error-msg').style.display = 'none';
+}
+function hideMessages() {
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('success-msg').style.display = 'none';
+}
+
+/* ── Enter key ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('form-signin').style.display !== 'none') signIn();
+    else signUp();
+  }
+});
+</script>
+</body>
+</html>
