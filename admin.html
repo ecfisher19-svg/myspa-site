@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+  --danger:#e05555;--success:#5db888;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Nav */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;border-bottom:0.5px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--gold);letter-spacing:0.08em;text-decoration:none}
+.nav-badge{font-size:9px;color:var(--danger);background:#e0555522;border:0.5px solid #e0555544;border-radius:10px;padding:2px 8px;letter-spacing:0.06em;text-transform:uppercase;margin-left:10px}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-btn{background:transparent;border:0.5px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:20px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s;text-decoration:none;display:inline-block}
+.nav-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
+
+/* Layout */
+.container{max-width:1200px;margin:0 auto;padding:32px 24px}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:20px 22px}
+.stat-card-val{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--gold);line-height:1}
+.stat-card-label{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:6px}
+.stat-card-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Section */
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text)}
+.section-count{font-size:11px;color:var(--text3);background:var(--surface2);border:0.5px solid var(--border);border-radius:20px;padding:3px 10px}
+
+/* Table */
+.table-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;padding:10px 16px;border-bottom:0.5px solid var(--border);text-align:left;font-weight:400;background:var(--surface2)}
+td{font-size:12px;color:var(--text2);padding:11px 16px;border-bottom:0.5px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.td-name{color:var(--text);font-weight:500}
+.td-gold{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:15px}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;letter-spacing:0.06em;text-transform:uppercase}
+.badge-designer{background:var(--gold-dim);color:var(--gold);border:0.5px solid var(--gold-mid)}
+.badge-contractor{background:#4488ff22;color:#6699ff;border:0.5px solid #4488ff44}
+.badge-public{background:#5db88822;color:var(--success);border:0.5px solid #5db88844}
+.badge-private{background:var(--surface2);color:var(--text3);border:0.5px solid var(--border)}
+.badge-pending{background:var(--gold-dim);color:var(--gold);border:0.5px solid var(--gold-mid)}
+.badge-accepted{background:#5db88822;color:var(--success);border:0.5px solid #5db88844}
+.badge-declined{background:#e0555522;color:var(--danger);border:0.5px solid #e0555544}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+
+/* Access denied */
+#access-denied{display:none;text-align:center;padding:80px 40px}
+#access-denied h2{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--danger);margin-bottom:12px}
+#access-denied p{font-size:13px;color:var(--text3);line-height:1.7}
+
+/* Tab nav */
+.tab-nav{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:24px}
+.tab-nav-item{padding:10px 20px;font-size:11px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.06em;text-transform:uppercase}
+.tab-nav-item.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-nav-item:hover{color:var(--text2)}
+
+/* Tabs content */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Action button */
+.action-link{color:var(--gold);text-decoration:none;font-size:11px;letter-spacing:0.04em;transition:opacity 0.2s}
+.action-link:hover{opacity:0.7}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center">
+    <a class="nav-logo" href="/index.html">MySpa</a>
+    <span class="nav-badge">Admin</span>
+  </div>
+  <div class="nav-right">
+    <a class="nav-btn" href="/editor.html">Editor</a>
+    <a class="nav-btn" href="/profile.html">My Profile</a>
+    <button class="nav-btn" onclick="signOut()" style="border-color:#e0555544;color:var(--danger)" onmouseover="this.style.borderColor='var(--danger)'" onmouseout="this.style.borderColor='#e0555544'">Sign Out</button>
+  </div>
+</nav>
+
+<div id="access-denied">
+  <h2>Access Denied</h2>
+  <p>This area is restricted to MySpa administrators.<br/>Please sign in with an admin account.</p>
+</div>
+
+<div id="main" style="display:none">
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-val" id="stat-users">—</div>
+        <div class="stat-card-label">Total Users</div>
+        <div class="stat-card-sub" id="stat-designers">— designers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val" id="stat-designs">—</div>
+        <div class="stat-card-label">Designs Saved</div>
+        <div class="stat-card-sub" id="stat-public">— public</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val" id="stat-bids">—</div>
+        <div class="stat-card-label">Bids Submitted</div>
+        <div class="stat-card-sub" id="stat-accepted">— accepted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val" id="stat-waitlist">—</div>
+        <div class="stat-card-label">Waitlist Signups</div>
+        <div class="stat-card-sub">Total interested</div>
+      </div>
+    </div>
+
+    <!-- Tab nav -->
+    <div class="tab-nav">
+      <div class="tab-nav-item active" onclick="showTab('users')">Users</div>
+      <div class="tab-nav-item" onclick="showTab('designs')">Designs</div>
+      <div class="tab-nav-item" onclick="showTab('bids')">Bids</div>
+      <div class="tab-nav-item" onclick="showTab('waitlist')">Waitlist</div>
+    </div>
+
+    <!-- Users tab -->
+    <div class="tab-content active" id="tab-users">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">All Users</div>
+          <div class="section-count" id="count-users">Loading...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Location</th>
+                <th>Joined</th>
+                <th>Designs</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"><tr><td colspan="6" class="loading">Loading users...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designs tab -->
+    <div class="tab-content" id="tab-designs">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">All Designs</div>
+          <div class="section-count" id="count-designs">Loading...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Design Name</th>
+                <th>Designer</th>
+                <th>Fixtures</th>
+                <th>Estimate</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="designs-tbody"><tr><td colspan="7" class="loading">Loading designs...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bids tab -->
+    <div class="tab-content" id="tab-bids">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">All Bids</div>
+          <div class="section-count" id="count-bids">Loading...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Design</th>
+                <th>Contractor</th>
+                <th>Bid Amount</th>
+                <th>Timeline</th>
+                <th>Status</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="bids-tbody"><tr><td colspan="6" class="loading">Loading bids...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waitlist tab -->
+    <div class="tab-content" id="tab-waitlist">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Waitlist</div>
+          <div class="section-count" id="count-waitlist">Loading...</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Source</th>
+                <th>Signed Up</th>
+              </tr>
+            </thead>
+            <tbody id="waitlist-tbody"><tr><td colspan="3" class="loading">Loading waitlist...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// ── Admin email whitelist ──
+const ADMIN_EMAILS = ['evanf@fisherautoparts.com', 'evan@myspa.design'];
+
+/* ── Auth check ── */
+const { data: { session } } = await supabase.auth.getSession();
+if(!session){
+  window.location.href = '/auth.html';
+}
+
+const userEmail = session.user.email;
+if(!ADMIN_EMAILS.includes(userEmail)){
+  document.getElementById('access-denied').style.display = 'block';
+} else {
+  document.getElementById('main').style.display = 'block';
+  await loadAll();
+}
+
+/* ── Load everything ── */
+async function loadAll(){
+  await Promise.all([loadUsers(), loadDesigns(), loadBids(), loadWaitlist()]);
+}
+
+/* ── Users ── */
+async function loadUsers(){
+  const { data: users } = await supabase.from('users').select('*').order('created_at', {ascending:false});
+  const { data: designs } = await supabase.from('designs').select('user_id');
+
+  const designCounts = {};
+  (designs||[]).forEach(d=>{ designCounts[d.user_id] = (designCounts[d.user_id]||0)+1; });
+
+  const designers = (users||[]).filter(u=>u.role==='designer').length;
+  const contractors = (users||[]).filter(u=>u.role==='contractor').length;
+
+  document.getElementById('stat-users').textContent = users?.length || 0;
+  document.getElementById('stat-designers').textContent = `${designers} designers · ${contractors} contractors`;
+  document.getElementById('count-users').textContent = `${users?.length || 0} total`;
+
+  const tbody = document.getElementById('users-tbody');
+  if(!users?.length){
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No users yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u=>`
+    <tr>
+      <td class="td-name">${u.full_name || '—'}</td>
+      <td>${u.email}</td>
+      <td><span class="badge badge-${u.role}">${u.role||'designer'}</span></td>
+      <td>${u.city ? `${u.city}, ${u.state||''}` : '—'}</td>
+      <td>${new Date(u.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td>${designCounts[u.id]||0}</td>
+    </tr>`).join('');
+}
+
+/* ── Designs ── */
+async function loadDesigns(){
+  const { data: designs } = await supabase
+    .from('designs')
+    .select('*, users(full_name, email)')
+    .order('created_at', {ascending:false});
+
+  const publicCount = (designs||[]).filter(d=>d.is_public).length;
+  document.getElementById('stat-designs').textContent = designs?.length || 0;
+  document.getElementById('stat-public').textContent = `${publicCount} public`;
+  document.getElementById('count-designs').textContent = `${designs?.length||0} total`;
+
+  const tbody = document.getElementById('designs-tbody');
+  if(!designs?.length){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No designs yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = designs.map(d=>`
+    <tr>
+      <td class="td-name">${d.name||'Untitled'}</td>
+      <td>${d.users?.full_name||d.users?.email||'—'}</td>
+      <td>${d.placements?.length||0} items</td>
+      <td class="td-gold">$${(d.total_estimate||0).toLocaleString()}</td>
+      <td><span class="badge badge-${d.is_public?'public':'private'}">${d.is_public?'Public':'Private'}</span></td>
+      <td>${new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td><a class="action-link" href="/editor.html?design=${d.id}" target="_blank">View →</a></td>
+    </tr>`).join('');
+}
+
+/* ── Bids ── */
+async function loadBids(){
+  const { data: bids } = await supabase
+    .from('bids')
+    .select('*, designs(name), contractors(business_name, users(full_name))')
+    .order('created_at', {ascending:false});
+
+  const accepted = (bids||[]).filter(b=>b.status==='accepted').length;
+  document.getElementById('stat-bids').textContent = bids?.length || 0;
+  document.getElementById('stat-accepted').textContent = `${accepted} accepted`;
+  document.getElementById('count-bids').textContent = `${bids?.length||0} total`;
+
+  const tbody = document.getElementById('bids-tbody');
+  if(!bids?.length){
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No bids yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = bids.map(b=>`
+    <tr>
+      <td class="td-name">${b.designs?.name||'—'}</td>
+      <td>${b.contractors?.business_name||b.contractors?.users?.full_name||'—'}</td>
+      <td class="td-gold">$${(b.amount||0).toLocaleString()}</td>
+      <td>${b.timeline_days||'—'} days</td>
+      <td><span class="badge badge-${b.status}">${b.status}</span></td>
+      <td>${new Date(b.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+    </tr>`).join('');
+}
+
+/* ── Waitlist ── */
+async function loadWaitlist(){
+  const { data: waitlist } = await supabase
+    .from('waitlist')
+    .select('*')
+    .order('created_at', {ascending:false});
+
+  document.getElementById('stat-waitlist').textContent = waitlist?.length || 0;
+  document.getElementById('count-waitlist').textContent = `${waitlist?.length||0} signups`;
+
+  const tbody = document.getElementById('waitlist-tbody');
+  if(!waitlist?.length){
+    tbody.innerHTML = '<tr><td colspan="3" class="empty">No waitlist signups yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = waitlist.map(w=>`
+    <tr>
+      <td class="td-name">${w.email}</td>
+      <td>${w.source||'Landing page'}</td>
+      <td>${new Date(w.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+    </tr>`).join('');
+}
+
+/* ── Tab switching ── */
+window.showTab = (tab)=>{
+  document.querySelectorAll('.tab-nav-item').forEach((el,i)=>{
+    const tabs = ['users','designs','bids','waitlist'];
+    el.classList.toggle('active', tabs[i]===tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(el=>{
+    el.classList.toggle('active', el.id==='tab-'+tab);
+  });
+};
+
+/* ── Sign out ── */
+window.signOut = async()=>{
+  await supabase.auth.signOut();
+  window.location.href='/index.html';
+};
+</script>
+</body>
+</html>
