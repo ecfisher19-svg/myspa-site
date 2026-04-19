@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MySpa — My Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
+  --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
+  --border:#2a2928;--border2:#3a3836;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
+  --danger:#e05555;--success:#5db888;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:60px;border-bottom:0.5px solid var(--border);background:var(--surface)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--gold);letter-spacing:0.08em;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-btn{background:transparent;border:0.5px solid var(--border2);color:var(--text2);padding:7px 16px;border-radius:20px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s;text-decoration:none;display:inline-block}
+.nav-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
+.nav-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.container{max-width:1000px;margin:0 auto;padding:40px 24px}
+.page-eyebrow{font-size:10px;color:var(--gold);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--text);line-height:1.1;margin-bottom:32px}
+.page-title em{font-style:italic;color:var(--gold)}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.card-title{font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:0.5px;background:var(--border)}
+.avatar-circle{width:72px;height:72px;border-radius:50%;background:var(--gold-dim);border:0.5px solid var(--gold-mid);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:14px}
+.profile-name{font-size:17px;font-weight:500;color:var(--text);margin-bottom:2px}
+.profile-email{font-size:12px;color:var(--text3);margin-bottom:12px}
+.designer-badge{display:inline-flex;align-items:center;gap:4px;background:var(--gold-dim);border:0.5px solid var(--gold-mid);border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.stat{background:var(--surface2);border-radius:10px;padding:12px;text-align:center}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);font-weight:300}
+.stat-label{font-size:10px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;display:block}
+.form-input{width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+.form-input:focus{border-color:var(--gold-mid)}
+.form-input::placeholder{color:var(--text3)}
+.save-btn{background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s}
+.save-btn:hover{opacity:0.88}
+.danger-btn{background:transparent;color:var(--danger);border:0.5px solid #e0555544;border-radius:8px;padding:10px 24px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.danger-btn:hover{background:#e0555511;border-color:var(--danger)}
+.design-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.2s}
+.design-card:hover{border-color:var(--border2)}
+.design-name{font-size:13px;font-weight:500;color:var(--text)}
+.design-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.design-actions{display:flex;gap:8px}
+.design-btn{background:transparent;border:0.5px solid var(--border);color:var(--text3);padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;transition:all 0.2s;text-decoration:none;display:inline-block}
+.design-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
+.design-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.public-toggle{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3)}
+.toggle{position:relative;width:32px;height:18px;display:inline-block}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:9px;cursor:pointer;transition:background 0.2s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle input:checked + .toggle-slider{background:var(--gold)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(14px)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3);font-size:13px;line-height:1.8}
+.empty-icon{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--border2);margin-bottom:12px;font-weight:300}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:0.5px solid var(--gold-mid);border-radius:8px;padding:10px 18px;font-size:12px;color:var(--gold);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+.tabs{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:20px}
+.tab{padding:10px 16px;font-size:11px;cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;transition:all 0.2s;letter-spacing:0.08em;text-transform:uppercase}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.bid-card{background:var(--surface2);border:0.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:8px}
+.bid-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.bid-contractor{font-size:13px;font-weight:500;color:var(--text)}
+.bid-amount{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)}
+.bid-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.bid-message{font-size:12px;color:var(--text2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
+.bid-actions{display:flex;gap:8px;margin-top:10px}
+.accept-btn{background:#5db88822;color:var(--success);border:0.5px solid #5db88844;border-radius:6px;padding:7px 14px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;transition:all 0.2s}
+.accept-btn:hover{background:#5db88844}
+.decline-btn{background:#e0555522;color:var(--danger);border:0.5px solid #e0555544;border-radius:6px;padding:7px 14px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;transition:all 0.2s}
+.decline-btn:hover{background:#e0555544}
+.bid-status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;margin-top:6px}
+.bid-status.pending{background:#c9a96e22;color:var(--gold);border:0.5px solid var(--gold-mid)}
+.bid-status.accepted{background:#5db88822;color:var(--success);border:0.5px solid #5db88844}
+.bid-status.declined{background:#e0555522;color:var(--danger);border:0.5px solid #e0555544}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/index.html">MySpa</a>
+  <div class="nav-right">
+    <a class="nav-btn" href="/editor.html">3D Editor</a>
+    <button class="nav-btn danger" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div id="loading" style="text-align:center;padding:80px;color:var(--text3);font-size:13px">Loading your profile...</div>
+
+<div id="main" style="display:none">
+  <div class="container">
+    <div class="page-eyebrow">Designer Profile</div>
+    <h1 class="page-title">My <em>MySpa</em></h1>
+
+    <div class="grid">
+      <!-- Left sidebar -->
+      <div>
+        <div class="card">
+          <div class="card-title">Profile</div>
+          <div class="avatar-circle" id="avatar">?</div>
+          <div class="profile-name" id="profile-name">...</div>
+          <div class="profile-email" id="profile-email">...</div>
+          <div class="designer-badge">Designer</div>
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat-val" id="stat-designs">0</div>
+              <div class="stat-label">Designs</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val" id="stat-bids">0</div>
+              <div class="stat-label">Bids received</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Account</div>
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" id="edit-name" placeholder="Your full name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="edit-email" placeholder="your@email.com"/>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="save-btn" onclick="saveProfile()">Save</button>
+            <button class="danger-btn" onclick="changePassword()">Change Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right content -->
+      <div>
+        <div class="tabs">
+          <div class="tab active" id="tab-designs" onclick="switchTab('designs')">My Designs</div>
+          <div class="tab" id="tab-bids" onclick="switchTab('bids')">Bids Received</div>
+        </div>
+
+        <!-- Designs panel -->
+        <div id="panel-designs">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+            <a class="save-btn" href="/editor.html" style="text-decoration:none;display:inline-block">+ New Design</a>
+          </div>
+          <div id="designs-list"></div>
+        </div>
+
+        <!-- Bids panel -->
+        <div id="panel-bids" style="display:none">
+          <div id="bids-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let currentUser = null;
+let designs = [];
+let allBids = [];
+
+/* ── Init ── */
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) { window.location.href = '/auth.html'; }
+currentUser = session.user;
+
+await loadProfile();
+await loadDesigns();
+await loadBids();
+
+document.getElementById('loading').style.display = 'none';
+document.getElementById('main').style.display = 'block';
+
+/* ── Load profile ── */
+async function loadProfile() {
+  const { data } = await supabase.from('users').select('*').eq('id', currentUser.id).single();
+  const name = data?.full_name || currentUser.user_metadata?.full_name || 'Designer';
+  const email = data?.email || currentUser.email;
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+
+  document.getElementById('avatar').textContent = initials;
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-email').textContent = email;
+  document.getElementById('edit-name').value = name;
+  document.getElementById('edit-email').value = email;
+}
+
+/* ── Load designs ── */
+async function loadDesigns() {
+  const { data } = await supabase.from('designs').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  designs = data || [];
+  document.getElementById('stat-designs').textContent = designs.length;
+
+  const list = document.getElementById('designs-list');
+  if (!designs.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◯</div>No designs yet.<br>Start designing your dream bathroom.</div>';
+    return;
+  }
+  list.innerHTML = designs.map(d => `
+    <div class="design-card">
+      <div>
+        <div class="design-name">${d.name || 'Untitled Design'}</div>
+        <div class="design-meta">$${(d.total_estimate||0).toLocaleString()} estimate · ${new Date(d.created_at).toLocaleDateString()}</div>
+        <div class="public-toggle" style="margin-top:8px">
+          <label class="toggle">
+            <input type="checkbox" ${d.is_public ? 'checked' : ''} onchange="togglePublic('${d.id}', this.checked)"/>
+            <span class="toggle-slider"></span>
+          </label>
+          <span>${d.is_public ? 'Public — contractors can bid' : 'Private'}</span>
+        </div>
+      </div>
+      <div class="design-actions">
+        <a class="design-btn" href="/editor.html?design=${d.id}">Edit in 3D</a>
+        <button class="design-btn danger" onclick="deleteDesign('${d.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── Load bids ── */
+async function loadBids() {
+  const designIds = designs.map(d => d.id);
+  if (!designIds.length) { document.getElementById('stat-bids').textContent = '0'; return; }
+
+  const { data } = await supabase
+    .from('bids')
+    .select('*, contractors(business_name, rating, user_id, users(full_name))')
+    .in('design_id', designIds)
+    .order('created_at', { ascending: false });
+
+  allBids = data || [];
+  document.getElementById('stat-bids').textContent = allBids.length;
+
+  const list = document.getElementById('bids-list');
+  if (!allBids.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◯</div>No bids yet.<br>Make a design public so contractors can find and bid on it.</div>';
+    return;
+  }
+
+  list.innerHTML = allBids.map(b => {
+    const contractorName = b.contractors?.business_name || b.contractors?.users?.full_name || 'Contractor';
+    const design = designs.find(d => d.id === b.design_id);
+    return `
+      <div class="bid-card">
+        <div class="bid-header">
+          <div>
+            <div class="bid-contractor">${contractorName}</div>
+            <div class="bid-meta">For: ${design?.name || 'Design'} · ${b.timeline_days} day timeline</div>
+            <div class="bid-status ${b.status}">${b.status}</div>
+          </div>
+          <div class="bid-amount">$${(b.amount||0).toLocaleString()}</div>
+        </div>
+        ${b.message ? `<div class="bid-message">${b.message}</div>` : ''}
+        ${b.status === 'pending' ? `
+          <div class="bid-actions">
+            <button class="accept-btn" onclick="respondToBid('${b.id}', 'accepted')">Accept Bid</button>
+            <button class="decline-btn" onclick="respondToBid('${b.id}', 'declined')">Decline</button>
+          </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+/* ── Toggle public ── */
+window.togglePublic = async (designId, isPublic) => {
+  await supabase.from('designs').update({ is_public: isPublic }).eq('id', designId);
+  toast(isPublic ? 'Design is now public — contractors can bid' : 'Design set to private');
+  await loadDesigns();
+};
+
+/* ── Delete design ── */
+window.deleteDesign = async (designId) => {
+  if (!confirm('Delete this design? This cannot be undone.')) return;
+  await supabase.from('designs').delete().eq('id', designId);
+  toast('Design deleted');
+  await loadDesigns();
+};
+
+/* ── Respond to bid ── */
+window.respondToBid = async (bidId, status) => {
+  await supabase.from('bids').update({ status }).eq('id', bidId);
+  toast(status === 'accepted' ? 'Bid accepted! The contractor will be notified.' : 'Bid declined.');
+  await loadBids();
+};
+
+/* ── Save profile ── */
+window.saveProfile = async () => {
+  const full_name = document.getElementById('edit-name').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  await supabase.from('users').update({ full_name, email }).eq('id', currentUser.id);
+  await supabase.auth.updateUser({ data: { full_name } });
+  document.getElementById('profile-name').textContent = full_name;
+  const initials = full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('avatar').textContent = initials;
+  toast('Profile saved!');
+};
+
+/* ── Change password ── */
+window.changePassword = async () => {
+  const { error } = await supabase.auth.resetPasswordForEmail(currentUser.email, {
+    redirectTo: `${window.location.origin}/reset-password.html`
+  });
+  if (error) toast('Error sending reset email');
+  else toast('Password reset email sent — check your inbox');
+};
+
+/* ── Tab switching ── */
+window.switchTab = (tab) => {
+  document.getElementById('tab-designs').classList.toggle('active', tab === 'designs');
+  document.getElementById('tab-bids').classList.toggle('active', tab === 'bids');
+  document.getElementById('panel-designs').style.display = tab === 'designs' ? 'block' : 'none';
+  document.getElementById('panel-bids').style.display = tab === 'bids' ? 'block' : 'none';
+};
+
+/* ── Sign out ── */
+window.signOut = async () => {
+  await supabase.auth.signOut();
+  window.location.href = '/index.html';
+};
+
+/* ── Toast ── */
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

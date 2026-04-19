@@ -790,23 +790,27 @@ async function renderDesigns(){
   }
 
   panel.innerHTML = `
-    <div class="api-note">
-      <strong>Live Pricing API</strong>
-      Plug in your Home Depot & Lowe's partner keys into <code>fetchLivePrices()</code>.
-    </div>
-    <div style="margin-top:10px">
-      <input class="design-input" id="design-name" type="text" placeholder="Design name..."/>
+    <div style="margin-bottom:10px">
+      <input class="design-input" id="design-name" type="text" placeholder="Name your design..."/>
       <button class="action-btn primary" onclick="saveDesign()">Save Design</button>
       <button class="action-btn secondary" onclick="exportDesign()">Export as JSON</button>
-      ${!currentUser ? `<p style="font-size:10px;color:var(--text3);margin-top:8px"><a href="/auth.html" style="color:var(--gold)">Sign in</a> to save designs to your account</p>` : ''}
+      ${currentUser
+        ? `<a href="/profile.html" class="action-btn secondary" style="display:block;text-align:center;text-decoration:none;margin-top:6px">View All Designs on Profile →</a>`
+        : `<p style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6"><a href="/auth.html" style="color:var(--gold)">Sign in</a> to save designs to your account and access them from any device</p>`
+      }
     </div>
-    ${designs.length?`<div class="cat-label" style="margin-top:8px">Saved Designs</div>`:''}
+    ${designs.length ? `<div class="cat-label" style="margin-top:8px">Saved Designs (${designs.length})</div>` : ''}
     ${designs.map((d,i)=>`
-      <div class="saved-card" onclick="loadDesign(${i})">
+      <div class="saved-card" onclick="loadDesign(${i})" style="position:relative">
         <div class="saved-card-name">${d.name}</div>
         <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
       </div>
     `).join('')}
+    ${!designs.length && currentUser ? `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">No saved designs yet.<br/>Name your design above and click Save.</div>` : ''}
+    <div class="api-note" style="margin-top:12px">
+      <strong>Live Pricing API</strong>
+      Plug in your Home Depot & Lowe's partner keys into <code>fetchLivePrices()</code>.
+    </div>
   `;
 }
 

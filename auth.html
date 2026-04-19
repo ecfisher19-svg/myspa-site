@@ -270,7 +270,9 @@ window.signUp = async () => {
 window.forgotPassword = async () => {
   const email = document.getElementById('signin-email').value.trim();
   if (!email) { showError('Enter your email address first.'); return; }
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password.html`
+  });
   if (error) showError(error.message);
   else showSuccess('Password reset email sent — check your inbox.');
 };
