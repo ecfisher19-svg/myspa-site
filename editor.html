@@ -3,596 +3,645 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MySpa — Design Your Dream Bathroom</title>
+<title>MySpa — 3D Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
 :root{
-  --gold:#c9a96e;--gold-lt:#e8d5b0;--gold-dim:#c9a96e18;--gold-mid:#c9a96e44;
+  --gold:#c9a96e;--gold-dim:#c9a96e18;--gold-mid:#c9a96e40;
   --bg:#080807;--surface:#111110;--surface2:#191918;--surface3:#222220;
   --border:#2a2928;--border2:#3a3836;
-  --text:#f2ede6;--text2:#a09890;--text3:#5a5450;
-  --cream:#f2ede6;--stone:#2a2928;
+  --text:#f0ebe3;--text2:#9a9088;--text3:#524e48;
   --danger:#e05555;--success:#5db888;
 }
-html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-#app{display:grid;grid-template-columns:1fr 300px;height:100vh}
 
-/* ── Viewport ── */
-#viewport{position:relative;background:var(--bg);overflow:hidden}
-#three-canvas{width:100%;height:100%;display:block}
-
-/* ── Header bar ── */
-#header{
-  position:absolute;top:0;left:0;right:0;height:52px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;z-index:10;
-  background:linear-gradient(to bottom,rgba(8,8,7,0.95),transparent);
-  border-bottom:0.5px solid rgba(201,169,110,0.1);
+/* ── App layout: full screen, two columns ── */
+#app{
+  display:grid;
+  grid-template-columns:1fr 300px;
+  height:100vh;
+  width:100vw;
+  background:var(--bg);
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
 }
-.logo{display:flex;align-items:baseline;gap:8px}
-.logo-mark{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);letter-spacing:0.08em}
-.logo-tag{font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
-.back-home{
-  display:flex;align-items:center;gap:6px;
-  font-size:11px;color:var(--text3);letter-spacing:0.08em;
-  text-transform:uppercase;text-decoration:none;
-  transition:color 0.2s;padding:6px 0;
-}
-.back-home:hover{color:var(--gold)}
-.back-home-arrow{font-size:14px;transition:transform 0.2s}
-.back-home:hover .back-home-arrow{transform:translateX(-3px)}
 
-#toolbar{display:flex;gap:6px}
+/* ── Left: viewport ── */
+#viewport{
+  position:relative;
+  overflow:hidden;
+  background:#0a0908;
+}
+#three-canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+/* ── Scan overlay — covers just the viewport ── */
+#scan-overlay{
+  position:absolute;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  gap:16px;
+  padding:40px;
+}
+.scan-logo{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--gold);letter-spacing:0.1em;margin-bottom:8px}
+.scan-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--text);text-align:center}
+.scan-sub{font-size:13px;color:var(--text3);text-align:center;line-height:1.7;max-width:360px}
+.scan-reticle{width:180px;height:180px;position:relative;margin:8px 0}
+.scan-corner{position:absolute;width:24px;height:24px;border-color:var(--gold);border-style:solid;border-width:0}
+.scan-corner.tl{top:0;left:0;border-top-width:2px;border-left-width:2px}
+.scan-corner.tr{top:0;right:0;border-top-width:2px;border-right-width:2px}
+.scan-corner.bl{bottom:0;left:0;border-bottom-width:2px;border-left-width:2px}
+.scan-corner.br{bottom:0;right:0;border-bottom-width:2px;border-right-width:2px}
+.scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:scanline 2s ease-in-out infinite;top:50%}
+@keyframes scanline{0%,100%{transform:translateY(-80px);opacity:0}50%{opacity:1}100%{transform:translateY(80px)}}
+.scan-progress{width:100%;max-width:300px;height:2px;background:var(--border);border-radius:1px;display:none}
+.scan-progress-bar{height:100%;background:var(--gold);border-radius:1px;width:0%;transition:width 0.4s ease}
+.scan-msg{font-size:12px;color:var(--text3);letter-spacing:0.04em;min-height:18px;text-align:center}
+.scan-btns{display:flex;gap:12px;margin-top:8px}
+.scan-btn-primary{background:var(--gold);color:var(--bg);border:none;border-radius:24px;padding:13px 32px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s}
+.scan-btn-primary:hover{opacity:0.88}
+.scan-btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+.scan-btn-ghost{background:transparent;color:var(--text2);border:0.5px solid var(--border2);border-radius:24px;padding:13px 28px;font-size:12px;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.2s}
+.scan-btn-ghost:hover{border-color:var(--gold-mid);color:var(--gold)}
+.scan-btn-ghost:disabled{opacity:0.3;cursor:not-allowed}
+
+/* ── Toolbar inside viewport ── */
+#toolbar{
+  position:absolute;
+  top:12px;
+  left:12px;
+  display:flex;
+  gap:6px;
+  z-index:10;
+}
 .tool-btn{
-  background:rgba(26,25,24,0.8);border:0.5px solid var(--border2);
-  color:var(--text2);padding:6px 14px;border-radius:20px;font-size:11px;
-  cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;
-  text-transform:uppercase;transition:all 0.2s;backdrop-filter:blur(12px);
+  background:var(--surface);
+  border:0.5px solid var(--border2);
+  color:var(--text3);
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:10px;
+  font-family:'DM Sans',sans-serif;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+  white-space:nowrap;
 }
-.tool-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
-.tool-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.tool-btn:hover,.tool-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.tool-btn.share{border-color:var(--gold-mid);color:var(--gold)}
 
-#ar-pill{
-  display:flex;align-items:center;gap:6px;
-  background:var(--gold-dim);border:0.5px solid var(--gold-mid);
-  border-radius:20px;padding:6px 14px;font-size:11px;color:var(--gold);
-  letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;
+/* ── Nav top right inside viewport ── */
+#viewport-nav{
+  position:absolute;
+  top:12px;
+  right:12px;
+  display:flex;
+  gap:8px;
+  z-index:10;
 }
-#ar-pill:hover{background:var(--gold-mid)}
-.ar-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.nav-pill{
+  background:var(--surface);
+  border:0.5px solid var(--border2);
+  color:var(--text3);
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:10px;
+  font-family:'DM Sans',sans-serif;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-decoration:none;
+  display:inline-block;
+}
+.nav-pill:hover{border-color:var(--gold-mid);color:var(--gold)}
+.nav-pill.danger:hover{border-color:var(--danger);color:var(--danger)}
 
-/* ── Info bar ── */
+/* ── Info bar at bottom of viewport ── */
 #info-bar{
-  position:absolute;bottom:20px;left:20px;right:20px;
-  background:rgba(17,17,16,0.85);border:0.5px solid var(--border);
-  border-radius:12px;padding:10px 18px;backdrop-filter:blur(16px);
-  display:flex;align-items:center;justify-content:space-between;
+  position:absolute;
+  bottom:12px;
+  left:12px;
+  right:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:10px;
+  color:var(--text3);
+  letter-spacing:0.04em;
+  z-index:10;
+  pointer-events:none;
 }
-#info-bar span{font-size:11px;color:var(--text3);letter-spacing:0.04em}
-#selected-info{font-size:11px;color:var(--gold);letter-spacing:0.04em}
+#selected-info{color:var(--gold)}
 
-/* ── Toast ── */
+/* ── Right: sidebar ── */
+#sidebar{
+  display:flex;
+  flex-direction:column;
+  background:var(--surface);
+  border-left:0.5px solid var(--border);
+  overflow:hidden;
+}
+
+/* Brand header */
+.sidebar-brand{
+  padding:14px 16px 12px;
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar-brand h1{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--gold);letter-spacing:0.08em}
+.sidebar-brand p{font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
+
+/* Save bar */
+.save-bar{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:10px 12px;
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;
+  background:var(--surface2);
+}
+.save-input{
+  flex:1;
+  background:var(--surface3);
+  border:0.5px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px;
+  color:var(--text);
+  font-size:12px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+}
+.save-input:focus{border-color:var(--gold-mid)}
+.save-input::placeholder{color:var(--text3)}
+.save-btn-sm{
+  background:var(--gold);
+  color:var(--bg);
+  border:none;
+  border-radius:6px;
+  padding:7px 14px;
+  font-size:11px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:500;
+  letter-spacing:0.04em;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:opacity 0.2s;
+}
+.save-btn-sm:hover{opacity:0.88}
+#save-status{font-size:10px;color:var(--success);padding:0 12px 6px;flex-shrink:0;min-height:16px}
+
+/* Stats */
+.room-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;
+}
+.stat{padding:10px 8px;text-align:center}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);font-weight:300;line-height:1}
+.stat-label{font-size:9px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+
+/* Selected item action bar */
+#selected-actions{
+  display:none;
+  padding:8px 12px;
+  background:#e0555511;
+  border-bottom:0.5px solid #e0555533;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+#selected-label{font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:8px}
+.action-btn-sm{
+  border-radius:6px;
+  padding:5px 10px;
+  font-size:10px;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  letter-spacing:0.04em;
+  border:0.5px solid;
+  transition:all 0.2s;
+  white-space:nowrap;
+}
+.action-btn-rotate{background:var(--surface2);color:var(--text2);border-color:var(--border2)}
+.action-btn-rotate:hover{border-color:var(--gold-mid);color:var(--gold)}
+.action-btn-remove{background:#e0555522;color:var(--danger);border-color:#e0555544;font-weight:500;margin-left:6px}
+.action-btn-remove:hover{background:#e0555544}
+
+/* Tabs */
+.tabs{
+  display:flex;
+  border-bottom:0.5px solid var(--border);
+  flex-shrink:0;
+}
+.tab{
+  flex:1;
+  padding:10px 4px;
+  font-size:10px;
+  text-align:center;
+  cursor:pointer;
+  color:var(--text3);
+  border-bottom:1.5px solid transparent;
+  transition:all 0.2s;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Search */
+.search-wrap{padding:8px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.search-input{
+  width:100%;
+  background:var(--surface2);
+  border:0.5px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px;
+  color:var(--text);
+  font-size:12px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+}
+.search-input:focus{border-color:var(--gold-mid)}
+.search-input::placeholder{color:var(--text3)}
+
+/* Panels */
+.panel{display:none;flex:1;overflow-y:auto;padding:10px 12px;flex-direction:column;gap:6px}
+.panel.active{display:flex}
+
+/* Product cards */
+.cat-label{font-size:9px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;padding:6px 0 4px;border-top:0.5px solid var(--border);margin-top:4px}
+.cat-label:first-child{border-top:none;margin-top:0}
+.product-card{
+  background:var(--surface2);
+  border:0.5px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  cursor:pointer;
+  transition:all 0.2s;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.product-card:hover{border-color:var(--gold-mid);background:var(--surface3)}
+.product-card:active{border-color:var(--gold)}
+.product-name{font-size:12px;color:var(--text);line-height:1.3}
+.product-dims{font-size:10px;color:var(--text3);margin-top:2px}
+.product-price{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);font-weight:300;white-space:nowrap}
+.add-icon{font-size:18px;color:var(--text3);transition:color 0.2s;flex-shrink:0}
+.product-card:hover .add-icon{color:var(--gold)}
+
+/* Cart */
+.cart-item{
+  background:var(--surface2);
+  border:0.5px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.cart-item-name{flex:1;font-size:12px;color:var(--text);line-height:1.3}
+.cart-item-price{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold);white-space:nowrap}
+.cart-remove{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px;transition:color 0.2s;flex-shrink:0}
+.cart-remove:hover{color:var(--danger)}
+.cart-total{background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:12px;margin-top:4px}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.cart-total-label{font-size:11px;color:var(--text3);letter-spacing:0.04em;text-transform:uppercase}
+.cart-total-amt{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)}
+.cart-note{font-size:10px;color:var(--text3);line-height:1.5;margin-bottom:10px}
+.shop-btns{display:flex;gap:8px}
+.shop-btn{flex:1;padding:8px;border-radius:6px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:none;text-align:center;letter-spacing:0.04em;text-transform:uppercase;border:none;cursor:pointer;transition:opacity 0.2s}
+.shop-btn:hover{opacity:0.85}
+.shop-btn.hd{background:#f96302;color:#fff}
+.shop-btn.lw{background:#004990;color:#fff}
+.shop-btn.wf{background:#7b2d8b;color:#fff}
+
+/* Saved design cards */
+.saved-card{
+  background:var(--surface2);
+  border:0.5px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  transition:border-color 0.2s;
+}
+.saved-card:hover{border-color:var(--border2)}
+.saved-card-info{flex:1;min-width:0}
+.saved-card-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved-card-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.saved-card-actions{display:flex;gap:6px;flex-shrink:0}
+.saved-card-btn{background:transparent;border:0.5px solid var(--border);color:var(--text3);border-radius:5px;padding:4px 8px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap}
+.saved-card-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
+.saved-card-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.editing-badge{font-size:9px;color:var(--gold);background:var(--gold-dim);border:0.5px solid var(--gold-mid);border-radius:10px;padding:2px 7px;letter-spacing:0.04em;white-space:nowrap}
+
+/* Empty states */
+.empty-state{text-align:center;padding:32px 16px;color:var(--text3);font-size:12px;line-height:1.8;flex:1}
+.empty-icon{font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--border2);margin-bottom:8px}
+
+/* Toast */
 #toast{
-  position:absolute;top:70px;left:50%;transform:translateX(-50%);
-  background:var(--surface2);border:0.5px solid var(--gold-mid);
-  border-radius:20px;padding:7px 18px;font-size:11px;color:var(--gold);
-  letter-spacing:0.06em;opacity:0;transition:opacity 0.3s;pointer-events:none;
-  white-space:nowrap;z-index:30;text-transform:uppercase;
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:0.5px solid var(--gold-mid);
+  border-radius:8px;padding:8px 18px;font-size:12px;color:var(--gold);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;
+  white-space:nowrap;
 }
 #toast.show{opacity:1}
 
-/* ── Sidebar ── */
-#sidebar{
-  background:var(--surface);border-left:0.5px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:-20px 0 60px rgba(0,0,0,0.4);
+/* Modals */
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(8,8,7,0.88);
+  backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
+  z-index:100;
 }
-
-.sidebar-brand{
-  padding:20px 20px 16px;border-bottom:0.5px solid var(--border);
-  background:linear-gradient(135deg,var(--surface),var(--surface2));
+.modal-overlay.show{display:flex}
+.modal-box{
+  background:var(--surface);
+  border:0.5px solid var(--border2);
+  border-radius:16px;
+  padding:28px;
+  max-width:420px;
+  width:90%;
 }
-.sidebar-brand h1{
-  font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;
-  color:var(--gold);letter-spacing:0.06em;line-height:1;
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);margin-bottom:8px}
+.modal-sub{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.modal-close-btn{
+  width:100%;background:var(--gold);color:var(--bg);border:none;
+  border-radius:8px;padding:11px;font-size:12px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
+  margin-top:12px;transition:opacity 0.2s;
 }
-.sidebar-brand p{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px}
-
-.room-stats{
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;
-  background:var(--border);border-bottom:0.5px solid var(--border);
+.modal-close-btn:hover{opacity:0.88}
+.modal-ghost-btn{
+  background:transparent;color:var(--text2);border:0.5px solid var(--border2);
+  border-radius:8px;padding:11px 20px;font-size:12px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all 0.2s;margin-left:8px;
 }
-.stat{background:var(--surface2);padding:10px 12px;text-align:center}
-.stat-val{font-size:13px;font-weight:500;color:var(--text);font-family:'Cormorant Garamond',serif}
-.stat-label{font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+.modal-ghost-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
 
-/* ── Tabs ── */
-.tabs{display:flex;border-bottom:0.5px solid var(--border)}
-.tab{
-  flex:1;padding:11px 8px;font-size:10px;text-align:center;
-  cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;
-  transition:all 0.2s;letter-spacing:0.08em;text-transform:uppercase;
+/* Dims grid */
+.dims-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.dim-input-wrap{text-align:center}
+.dim-label{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.dim-input{
+  width:100%;background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:8px;padding:10px;color:var(--text);font-size:18px;
+  font-family:'DM Sans',sans-serif;text-align:center;outline:none;
 }
-.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-.tab:hover:not(.active){color:var(--text2)}
+.dim-input:focus{border-color:var(--gold-mid)}
 
-/* ── Search ── */
-.search-wrap{padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)}
-.search-input{
-  width:100%;background:var(--surface3);border:0.5px solid var(--border);
-  border-radius:6px;padding:7px 12px;color:var(--text);font-size:12px;
-  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
-}
-.search-input::placeholder{color:var(--text3)}
-.search-input:focus{border-color:var(--gold-mid)}
-
-/* ── Products ── */
-#products-panel{flex:1;overflow-y:auto;padding:10px}
-#products-panel::-webkit-scrollbar{width:3px}
-#products-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
-.cat-label{
-  font-size:9px;color:var(--text3);letter-spacing:0.12em;
-  text-transform:uppercase;padding:10px 4px 6px;
+/* Share link box */
+.share-link-box{
+  background:var(--surface2);border:0.5px solid var(--border2);
+  border-radius:8px;padding:10px 14px;margin-bottom:12px;
   display:flex;align-items:center;gap:8px;
 }
-.cat-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+.share-link-text{font-size:11px;color:var(--text2);flex:1;word-break:break-all}
+.copy-btn{
+  background:var(--gold);color:var(--bg);border:none;border-radius:6px;
+  padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;
+  font-weight:500;cursor:pointer;white-space:nowrap;transition:all 0.2s;
+}
+.copy-btn:hover{opacity:0.88}
+.copy-btn.copied{background:var(--success)}
 
-.product-card{
-  background:var(--surface2);border:0.5px solid var(--border);
-  border-radius:10px;padding:12px;margin-bottom:6px;
-  cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;
-}
-.product-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,var(--gold-dim),transparent);
-  opacity:0;transition:opacity 0.25s;
-}
-.product-card:hover{border-color:var(--gold-mid);transform:translateY(-1px)}
-.product-card:hover::before{opacity:1}
-.product-card:active{transform:scale(0.98)}
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.toggle-label{font-size:12px;color:var(--text2)}
+.toggle{position:relative;width:32px;height:18px;display:inline-block;cursor:pointer;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:var(--border2);border-radius:9px;transition:background 0.2s}
+.toggle-thumb{position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle input:checked ~ .toggle-track{background:var(--gold)}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(14px)}
 
-.product-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;position:relative}
-.product-dims{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.03em;position:relative}
-.product-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;position:relative}
-.product-price{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--gold)}
-.retailer-badges{display:flex;gap:4px;flex-wrap:wrap}
-.badge{
-  font-size:9px;padding:3px 7px;border-radius:4px;
-  letter-spacing:0.05em;font-weight:500;text-decoration:none;
-  transition:opacity 0.2s;display:inline-block;text-transform:uppercase;
+/* Download buttons */
+.dl-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.dl-btn{
+  background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);
+  border-radius:8px;padding:10px;font-size:11px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase;
 }
-.badge:hover{opacity:0.8}
-.badge-hd{background:#f9630244;color:#f96302;border:0.5px solid #f9630266}
-.badge-lw{background:#00499044;color:#4a90d9;border:0.5px solid #00499066}
-.badge-wf{background:#7c3aed44;color:#a78bfa;border:0.5px solid #7c3aed66}
+.dl-btn:hover{border-color:var(--gold-mid);color:var(--gold)}
 
-/* ── Cart ── */
-#cart-panel{display:none;flex:1;overflow-y:auto;padding:10px;flex-direction:column;gap:6px}
-#cart-panel::-webkit-scrollbar{width:3px}
-#cart-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
-.cart-item{
-  background:var(--surface2);border:0.5px solid var(--border);
-  border-radius:10px;padding:10px 12px;
-  display:flex;justify-content:space-between;align-items:center;gap:8px;
-}
-.cart-item-name{font-size:11px;color:var(--text);flex:1;line-height:1.3}
-.cart-item-price{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);white-space:nowrap}
-.cart-remove{
-  background:none;border:none;color:var(--text3);cursor:pointer;
-  font-size:14px;padding:0 2px;transition:color 0.2s;line-height:1;
-}
-.cart-remove:hover{color:var(--danger)}
-
-.cart-total{
-  background:var(--surface3);border:0.5px solid var(--gold-mid);
-  border-radius:10px;padding:14px;margin-top:4px;
-}
-.cart-total-row{display:flex;justify-content:space-between;align-items:baseline}
-.cart-total-label{font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
-.cart-total-amt{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);font-weight:300}
-.cart-note{font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5}
-
-.shop-btns{display:flex;gap:6px;margin-top:10px}
-.shop-btn{
-  flex:1;padding:10px 8px;border-radius:8px;font-size:10px;
-  text-align:center;text-decoration:none;font-family:'DM Sans',sans-serif;
-  font-weight:500;letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.2s;
-}
-.shop-btn:hover{opacity:0.85}
-.shop-btn.hd{background:#f9630222;color:#f96302;border:0.5px solid #f9630244}
-.shop-btn.lw{background:#00499022;color:#4a90d9;border:0.5px solid #00499044}
-
-.empty-state{
-  text-align:center;padding:40px 20px;color:var(--text3);
-  font-size:12px;line-height:1.8;
-}
-.empty-state-icon{
-  font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--border2);
-  margin-bottom:12px;font-weight:300;
-}
-
-/* ── Designs Panel ── */
-#designs-panel{display:none;flex:1;overflow-y:auto;padding:10px;flex-direction:column;gap:8px}
-.design-input{
-  width:100%;background:var(--surface3);border:0.5px solid var(--border);
-  border-radius:8px;padding:9px 12px;color:var(--text);font-size:12px;
-  font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;
-  margin-bottom:6px;
-}
-.design-input:focus{border-color:var(--gold-mid)}
-.design-input::placeholder{color:var(--text3)}
-.action-btn{
-  width:100%;padding:11px;border-radius:8px;font-size:11px;
-  font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;
-  letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s;margin-bottom:6px;
-}
-.action-btn.primary{background:var(--gold);color:var(--bg);border:none}
-.action-btn.primary:hover{opacity:0.9}
-.action-btn.secondary{background:transparent;color:var(--text2);border:0.5px solid var(--border2)}
-.action-btn.secondary:hover{border-color:var(--gold-mid);color:var(--gold)}
-
-.saved-card{
-  background:var(--surface2);border:0.5px solid var(--border);
-  border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s;
-}
-.saved-card:hover{border-color:var(--gold-mid)}
-.saved-card-name{font-size:12px;color:var(--text);font-weight:500}
-.saved-card-meta{font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.03em}
-
-.api-note{
-  background:var(--surface3);border:0.5px solid var(--border);
-  border-radius:8px;padding:12px;font-size:11px;color:var(--text3);
-  line-height:1.6;margin-top:4px;
-}
-.api-note strong{color:var(--gold);display:block;margin-bottom:4px;font-size:11px;letter-spacing:0.04em;text-transform:uppercase}
-.api-note code{background:var(--surface);padding:1px 5px;border-radius:3px;font-size:10px;color:var(--gold-lt)}
-
-/* ── Scan Overlay ── */
-#scan-overlay{
-  position:absolute;inset:0;
-  background:rgba(8,8,7,0.92);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  z-index:20;backdrop-filter:blur(8px);
-}
-.scan-frame{
-  width:280px;aspect-ratio:3/4;position:relative;
-  display:flex;align-items:center;justify-content:center;
-}
-.scan-corner{position:absolute;width:28px;height:28px;border-color:var(--gold);border-style:solid}
-.scan-corner.tl{top:0;left:0;border-width:2px 0 0 2px}
-.scan-corner.tr{top:0;right:0;border-width:2px 2px 0 0}
-.scan-corner.bl{bottom:0;left:0;border-width:0 0 2px 2px}
-.scan-corner.br{bottom:0;right:0;border-width:0 2px 2px 0}
-.scan-reticle{width:60px;height:60px;border:0.5px solid var(--gold-mid);border-radius:50%;position:relative}
-.scan-reticle::after{
-  content:'';position:absolute;inset:6px;border:0.5px solid var(--gold-mid);
-  border-radius:50%;animation:spin 4s linear infinite;border-top-color:var(--gold);
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.scan-line{
-  position:absolute;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  animation:scanline 2.5s ease-in-out infinite;
-}
-@keyframes scanline{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
-.scan-heading{
-  margin-top:28px;font-family:'Cormorant Garamond',serif;font-size:22px;
-  font-weight:300;color:var(--gold);letter-spacing:0.12em;text-align:center;
-}
-.scan-sub{
-  margin-top:8px;font-size:11px;color:var(--text3);text-align:center;
-  max-width:240px;line-height:1.6;letter-spacing:0.04em;
-}
-.scan-progress{width:240px;height:1px;background:var(--border);margin-top:20px;display:none;border-radius:1px;overflow:hidden}
-.scan-progress-bar{height:100%;width:0;background:var(--gold);transition:width 0.15s linear}
-.scan-actions{display:flex;gap:10px;margin-top:20px}
-.scan-cta{
-  padding:10px 26px;border-radius:24px;font-size:11px;
-  cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;
-  text-transform:uppercase;transition:all 0.2s;
-}
-.scan-cta.primary{background:var(--gold);color:var(--bg);border:none;font-weight:500}
-.scan-cta.primary:hover{opacity:0.9}
-.scan-cta.ghost{background:transparent;color:var(--text3);border:0.5px solid var(--border2)}
-.scan-cta.ghost:hover{border-color:var(--gold-mid);color:var(--text2)}
-.scan-cta:disabled{opacity:0.4;cursor:not-allowed}
-
-/* ── AR Modal ── */
-#ar-modal{
-  display:none;position:absolute;inset:0;
-  background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center;z-index:25;flex-direction:column;
-}
-#ar-modal.show{display:flex}
-#share-modal{
-  display:none;position:absolute;inset:0;
-  background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center;z-index:25;flex-direction:column;
-}
-#share-modal.show{display:flex}
-.modal-card{
-  background:var(--surface);border:0.5px solid var(--border2);
-  border-radius:16px;padding:28px;max-width:360px;
-}
-.modal-card h2{
-  font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;
-  color:var(--gold);margin-bottom:12px;letter-spacing:0.06em;
-}
-.modal-card p{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px}
-.modal-card code{background:var(--surface3);padding:2px 6px;border-radius:4px;font-size:10px;color:var(--gold-lt)}
-.modal-close{
-  background:var(--gold);color:var(--bg);border:none;border-radius:24px;
-  padding:10px 28px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;
-  font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;
-}
+/* Link style */
+a.gold-link{color:var(--gold);text-decoration:none;font-size:11px}
+a.gold-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- 3D Viewport -->
+  <!-- ── LEFT: 3D Viewport ── -->
   <div id="viewport">
     <canvas id="three-canvas"></canvas>
 
-    <!-- Header -->
-    <div id="header">
-      <div style="display:flex;align-items:center;gap:20px">
-        <a class="back-home" href="/index.html"><span class="back-home-arrow">←</span> Home</a>
-        <div class="logo">
-          <span class="logo-mark">MySpa</span>
-          <span class="logo-tag">Design Studio</span>
-        </div>
-      </div>
-      <div id="toolbar">
-        <button class="tool-btn active" id="btn-move">Move</button>
-        <button class="tool-btn" id="btn-rotate">Rotate 45°</button>
-        <button class="tool-btn" id="btn-delete">Remove</button>
-        <button class="tool-btn" id="btn-reset">Reset View</button>
-        <button class="tool-btn" onclick="document.getElementById('room-dims-modal').style.display='flex'">Room Size</button>
-        <button class="tool-btn" id="btn-share" onclick="shareDesign()" style="border-color:var(--gold-mid);color:var(--gold)">Share Design</button>
-      </div>
-      <div id="ar-pill" onclick="document.getElementById('ar-modal').classList.add('show')">
-        <span class="ar-dot"></span>AR Scan
-      </div>
-      <div id="auth-nav-area" style="display:flex;align-items:center;gap:8px">
-        <a href="/auth.html" id="auth-nav-link" style="font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Sign In</a>
-        <a href="/profile.html" id="profile-nav-link" style="display:none;font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">My Profile</a>
-        <button id="signout-nav-btn" onclick="signOutUser()" style="display:none;font-size:11px;color:var(--text3);background:transparent;border:0.5px solid var(--border2);border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Sign Out</button>
-      </div>
-    </div>
-
-    <div id="info-bar">
-      <span>Drag to move · Scroll to zoom · Click to select · Delete key or ✕ to remove</span>
-      <span id="selected-info">Nothing selected</span>
-    </div>
-
-    <!-- Trash zone — appears when dragging toward sidebar -->
-    <div id="trash-zone" style="
-      position:absolute;right:0;top:0;bottom:0;width:80px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      background:rgba(224,85,85,0.08);border-left:1px dashed var(--danger);
-      opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:5;
-      font-size:10px;color:var(--danger);letter-spacing:0.08em;text-transform:uppercase;gap:8px;
-    ">
-      <div style="font-size:20px">✕</div>
-      <div>Remove</div>
-    </div>
-
-    <div id="toast"></div>
-
-    <!-- AR Modal -->
-    <div id="ar-modal">
-      <div class="modal-card">
-        <h2>AR Room Scanning</h2>
-        <p>True AR scanning requires a native iOS app using Apple's <strong>RoomPlan SDK</strong> and LiDAR sensor (iPhone 12 Pro and later). The Swift code for this is ready to generate — it just needs to be compiled into a native app.</p>
-        <p>The full scanning pipeline outputs a dimensionally accurate <code>CapturedRoom</code> object which bridges directly into this 3D editor. Accuracy: ±1–2cm.</p>
-        <p style="color:var(--text3);font-size:11px">Coming in the iOS release of MySpa. For now, use the simulated scan or enter your room dimensions manually.</p>
-        <button class="modal-close" onclick="document.getElementById('ar-modal').classList.remove('show')">Got it</button>
-      </div>
-    </div>
-
-    <!-- Share Modal -->
-    <div id="share-modal">
-      <div class="modal-card" style="max-width:420px;width:90%">
-        <h2>Share Your Design</h2>
-        <p>Anyone with this link can view your design in 3D — perfect for sharing with your contractor, spouse, or interior designer.</p>
-
-        <div id="share-not-saved" style="display:none">
-          <p style="color:var(--gold);font-size:12px">Save your design first before sharing!</p>
-          <button class="modal-close" onclick="document.getElementById('share-modal').classList.remove('show');saveDesign()">Save & Share</button>
-        </div>
-
-        <div id="share-content" style="display:none">
-          <div style="background:var(--surface3);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            <span id="share-url" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all;font-family:'DM Sans',sans-serif"></span>
-            <button onclick="copyShareLink()" style="background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'" id="copy-btn">Copy Link</button>
-          </div>
-
-          <div style="display:flex;gap:8px;margin-bottom:12px">
-            <button onclick="downloadGLTF()" style="flex:1;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-              Download .GLB File
-            </button>
-            <button onclick="exportDesign()" style="flex:1;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-              Download .JSON File
-            </button>
-          </div>
-
-          <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:12px">
-            <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Make design public</div>
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <span style="font-size:12px;color:var(--text2)" id="public-label">Private — only you can see this</span>
-              <label style="position:relative;width:32px;height:18px;display:inline-block;cursor:pointer">
-                <input type="checkbox" id="public-toggle" onchange="togglePublicFromEditor(this.checked)" style="opacity:0;width:0;height:0"/>
-                <span id="public-slider" style="position:absolute;inset:0;background:var(--border2);border-radius:9px;transition:background 0.2s"></span>
-                <span id="public-knob" style="position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.2s"></span>
-              </label>
-            </div>
-          </div>
-
-          <p style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:12px">Making a design public lets contractors find and bid on it from the contractor portal.</p>
-        </div>
-
-        <button class="modal-close" onclick="document.getElementById('share-modal').classList.remove('show')">Close</button>
-      </div>
-    </div>
-
-    <!-- Scan Overlay -->
+    <!-- Scan overlay -->
     <div id="scan-overlay">
-      <div class="scan-frame">
+      <div class="scan-logo">MySpa</div>
+      <h2 class="scan-title">Design Your Dream Bathroom</h2>
+      <div class="scan-reticle">
         <div class="scan-corner tl"></div>
         <div class="scan-corner tr"></div>
         <div class="scan-corner bl"></div>
         <div class="scan-corner br"></div>
         <div class="scan-line"></div>
-        <div class="scan-reticle"></div>
       </div>
-      <div class="scan-heading" id="scan-heading">Scan Your Bathroom</div>
-      <div class="scan-sub" id="scan-sub">Slowly pan your camera around the room to capture walls, floor, and fixtures</div>
+      <p class="scan-sub">Scan your bathroom with the iOS app for exact dimensions, or use a default room to start designing now.</p>
       <div class="scan-progress" id="scan-progress"><div class="scan-progress-bar" id="scan-bar"></div></div>
-      <div class="scan-actions">
-        <button class="scan-cta primary" id="btn-scan">Simulate Scan</button>
-        <button class="scan-cta ghost" id="btn-skip">Use Default Room</button>
+      <div class="scan-msg" id="scan-msg"></div>
+      <div class="scan-btns">
+        <button class="scan-btn-primary" id="btn-scan">Simulate AR Scan</button>
+        <button class="scan-btn-ghost" id="btn-skip">Use Default Room</button>
       </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div id="toolbar">
+      <button class="tool-btn active" id="btn-move">Move</button>
+      <button class="tool-btn" id="btn-rotate">Rotate 45°</button>
+      <button class="tool-btn" id="btn-delete">Remove Mode</button>
+      <button class="tool-btn" id="btn-reset">Reset View</button>
+      <button class="tool-btn" id="btn-room">Room Size</button>
+      <button class="tool-btn share" id="btn-share">Share Design</button>
+    </div>
+
+    <!-- Nav pills top right -->
+    <div id="viewport-nav">
+      <a class="nav-pill" id="nav-signin" href="/auth.html">Sign In</a>
+      <a class="nav-pill" id="nav-profile" href="/profile.html" style="display:none">My Profile</a>
+      <button class="nav-pill danger" id="nav-signout" onclick="signOutUser()" style="display:none">Sign Out</button>
+    </div>
+
+    <!-- Info bar -->
+    <div id="info-bar">
+      <span>Click to select · Move to drag · Delete key or ✕ to remove · Scroll to zoom</span>
+      <span id="selected-info">Nothing selected</span>
     </div>
   </div>
 
-  <!-- Sidebar -->
+  <!-- ── RIGHT: Sidebar ── -->
   <div id="sidebar">
+    <!-- Brand -->
     <div class="sidebar-brand">
       <h1>MySpa</h1>
       <p>Bathroom Design Studio</p>
-      <a class="back-home" href="/index.html" style="margin-top:8px"><span class="back-home-arrow">←</span> Back to home</a>
     </div>
 
-    <!-- Save design — always visible at top -->
-    <div style="padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)">
-      <div style="display:flex;gap:8px;align-items:center">
-        <input class="search-input" id="design-name" type="text" placeholder="Name your design..." style="flex:1;font-size:12px"/>
-        <button onclick="saveDesign()" style="background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:7px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">Save</button>
-      </div>
-      <div id="save-status" style="font-size:10px;color:var(--text3);margin-top:5px;letter-spacing:0.04em;min-height:14px"></div>
+    <!-- Save bar -->
+    <div class="save-bar">
+      <input class="save-input" id="design-name" placeholder="Name your design..."/>
+      <button class="save-btn-sm" onclick="saveDesign()">Save</button>
     </div>
+    <div id="save-status"></div>
 
-    </div>
-
+    <!-- Stats -->
     <div class="room-stats">
       <div class="stat"><div class="stat-val" id="stat-items">0</div><div class="stat-label">Items</div></div>
       <div class="stat"><div class="stat-val" id="stat-sqft">—</div><div class="stat-label">Sq Ft</div></div>
-      <div class="stat"><div class="stat-val" id="stat-total">$0</div><div class="stat-label">Est. Total</div></div>
+      <div class="stat"><div class="stat-val" id="stat-total">$0</div><div class="stat-label">Total</div></div>
     </div>
 
-    <!-- Selected item actions — only shows when item is selected -->
-    <div id="selected-actions" style="display:none;padding:8px 12px;background:#e0555511;border-bottom:0.5px solid #e0555533;align-items:center;justify-content:space-between">
-      <span id="selected-label" style="font-size:11px;color:var(--text2)">Item selected</span>
-      <div style="display:flex;gap:6px">
-        <button onclick="rotateSelected()" style="background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">↻ Rotate</button>
-        <button onclick="removeSelected()" style="background:#e0555522;color:var(--danger);border:0.5px solid #e0555544;border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;font-weight:500;transition:all 0.2s" onmouseover="this.style.background='#e0555544'" onmouseout="this.style.background='#e0555522'">✕ Remove</button>
+    <!-- Selected item actions -->
+    <div id="selected-actions">
+      <span id="selected-label">Item selected</span>
+      <div style="display:flex;flex-shrink:0">
+        <button class="action-btn-sm action-btn-rotate" onclick="rotateSelected()">↻ Rotate</button>
+        <button class="action-btn-sm action-btn-remove" onclick="removeSelected()">✕ Remove</button>
       </div>
     </div>
 
+    <!-- Tabs -->
     <div class="tabs">
-      <div class="tab active" id="tab-products" onclick="switchTab('products')">Catalog</div>
+      <div class="tab active" id="tab-catalog" onclick="switchTab('catalog')">Catalog</div>
       <div class="tab" id="tab-cart" onclick="switchTab('cart')">Cart <span id="cart-badge"></span></div>
       <div class="tab" id="tab-designs" onclick="switchTab('designs')">My Designs</div>
     </div>
 
-    <div class="search-wrap">
-      <input class="search-input" id="search" type="text" placeholder="Search fixtures..." oninput="filterProducts(this.value)"/>
+    <!-- Search (catalog only) -->
+    <div class="search-wrap" id="search-wrap">
+      <input class="search-input" id="search" placeholder="Search fixtures..." oninput="filterProducts(this.value)"/>
     </div>
 
-    <div id="products-panel"></div>
-    <div id="cart-panel"></div>
-    <div id="designs-panel"></div>
+    <!-- Panels -->
+    <div class="panel active" id="panel-catalog"></div>
+    <div class="panel" id="panel-cart"></div>
+    <div class="panel" id="panel-designs"></div>
   </div>
 </div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
 <!-- Room Dimensions Modal -->
-<div id="room-dims-modal" style="display:none;position:fixed;inset:0;background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:50">
-  <div style="background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:28px;max-width:360px;width:90%">
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);margin-bottom:6px">Room Dimensions</h2>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6">Enter your room size in feet. These will auto-populate when you scan with the iOS app.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
-      <div style="text-align:center">
-        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Width (ft)</div>
-        <input id="room-w" type="number" value="26" min="4" max="100" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+<div class="modal-overlay" id="modal-room">
+  <div class="modal-box">
+    <div class="modal-title">Room Dimensions</div>
+    <div class="modal-sub">Enter your room size in feet. This will auto-populate when you scan with the MySpa iOS app.</div>
+    <div class="dims-grid">
+      <div class="dim-input-wrap">
+        <div class="dim-label">Width (ft)</div>
+        <input class="dim-input" id="room-w" type="number" value="26" min="4" max="200" step="1"/>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Length (ft)</div>
-        <input id="room-d" type="number" value="26" min="4" max="100" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+      <div class="dim-input-wrap">
+        <div class="dim-label">Length (ft)</div>
+        <input class="dim-input" id="room-d" type="number" value="26" min="4" max="200" step="1"/>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Height (ft)</div>
-        <input id="room-h" type="number" value="9" min="6" max="20" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+      <div class="dim-input-wrap">
+        <div class="dim-label">Height (ft)</div>
+        <input class="dim-input" id="room-h" type="number" value="9" min="6" max="30" step="1"/>
       </div>
     </div>
-    <div style="display:flex;gap:10px">
-      <button onclick="applyRoomDims()" style="flex:1;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:12px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer">Apply</button>
-      <button onclick="document.getElementById('room-dims-modal').style.display='none'" style="background:transparent;color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:12px 20px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Cancel</button>
+    <div style="display:flex">
+      <button class="modal-close-btn" style="flex:1" onclick="applyRoomDims()">Apply Dimensions</button>
+      <button class="modal-ghost-btn" onclick="closeModal('modal-room')">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal-box">
+    <div class="modal-title">Share Design</div>
+    <div class="modal-sub">Share this link with your contractor, spouse, or designer — they can view the full 3D layout.</div>
+    <div id="share-not-saved" style="display:none">
+      <p style="font-size:12px;color:var(--gold);margin-bottom:12px">Save your design first before sharing!</p>
+    </div>
+    <div id="share-content" style="display:none">
+      <div class="share-link-box">
+        <span class="share-link-text" id="share-url"></span>
+        <button class="copy-btn" id="copy-btn" onclick="copyShareLink()">Copy</button>
+      </div>
+      <div class="dl-btns">
+        <button class="dl-btn" onclick="downloadGLTF()">Download .GLTF</button>
+        <button class="dl-btn" onclick="downloadJSON()">Download .JSON</button>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label" id="public-label">Private — only you can see this</span>
+        <label class="toggle">
+          <input type="checkbox" id="public-toggle" onchange="togglePublic(this.checked)"/>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+      <p style="font-size:10px;color:var(--text3);line-height:1.6">Making a design public lets contractors find and bid on it.</p>
+    </div>
+    <button class="modal-close-btn" onclick="closeModal('modal-share')">Close</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════
+'use strict';
+
+/* ═══════════════════════════════════════
    PRODUCT CATALOG
-═══════════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 const PRODUCTS = [
-  // Vanities
-  {id:'v1',cat:'Vanities',name:'Carrara Marble Double Vanity 60"',price:1299,w:1.52,d:0.55,h:0.9,color:0xf0ece6,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/marble+double+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=marble+double+vanity'}]},
-  {id:'v2',cat:'Vanities',name:'Walnut Floating Vanity 48"',price:849,w:1.22,d:0.46,h:0.85,color:0x5c3a1e,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/walnut+floating+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walnut+floating+vanity'}]},
-  {id:'v3',cat:'Vanities',name:'Matte White Single Vanity 36"',price:599,w:0.91,d:0.46,h:0.88,color:0xe8e4de,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/white+vanity+36'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=white+vanity+36+inch'}]},
-  {id:'v4',cat:'Vanities',name:'Navy & Brushed Gold Vanity 42"',price:1079,w:1.07,d:0.48,h:0.9,color:0x1a2744,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/navy+vanity'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=navy+vanity'}]},
-  {id:'v5',cat:'Vanities',name:'Terrazzo Top Vanity 54"',price:1499,w:1.37,d:0.52,h:0.9,color:0xd4cfc8,
-   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=terrazzo+vanity'}]},
-
-  // Toilets
-  {id:'t1',cat:'Toilets',name:'Kohler Elongated Smart Bidet',price:1499,w:0.38,d:0.72,h:0.78,color:0xfafaf8,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/kohler+smart+bidet+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=kohler+smart+toilet'}]},
-  {id:'t2',cat:'Toilets',name:'One-Piece Comfort Height',price:449,w:0.37,d:0.68,h:0.75,color:0xf8f6f2,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/one+piece+comfort+height+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=one+piece+comfort+height+toilet'}]},
-  {id:'t3',cat:'Toilets',name:'Wall-Hung Toilet & Carrier',price:899,w:0.37,d:0.52,h:0.42,color:0xffffff,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/wall+hung+toilet'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=wall+hung+toilet'}]},
-
-  // Showers
-  {id:'s1',cat:'Showers',name:'Rainfall Walk-In Enclosure 48×36',price:2799,w:1.22,d:0.91,h:2.2,color:0xd8eaf2,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/walk+in+shower+enclosure'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walk+in+shower+enclosure'}]},
-  {id:'s2',cat:'Showers',name:'Frameless Corner Shower 36×36',price:1199,w:0.91,d:0.91,h:2.1,color:0xc8dde8,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/frameless+corner+shower'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=frameless+corner+shower'}]},
-  {id:'s3',cat:'Showers',name:'Steam Spa Cabin 48×48',price:4299,w:1.22,d:1.22,h:2.2,color:0xe8f0f5,
-   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=steam+shower+cabin'},{n:'HD',url:'https://www.homedepot.com/s/steam+shower+cabin'}]},
-
-  // Bathtubs
-  {id:'tb1',cat:'Bathtubs',name:'Freestanding Oval Soaking Tub',price:2199,w:1.72,d:0.76,h:0.65,color:0xf0ede8,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/freestanding+soaking+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=freestanding+soaking+tub'}]},
-  {id:'tb2',cat:'Bathtubs',name:'Clawfoot Cast Iron Tub',price:3199,w:1.68,d:0.76,h:0.72,color:0xfaf8f4,
-   retailers:[{n:'LW',url:'https://www.lowes.com/search?searchTerm=clawfoot+cast+iron+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=clawfoot+tub'}]},
-  {id:'tb3',cat:'Bathtubs',name:'Japanese Deep Soaking Tub',price:2999,w:1.22,d:0.86,h:0.76,color:0xe8e0d8,
-   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=japanese+soaking+tub'},{n:'HD',url:'https://www.homedepot.com/s/japanese+soaking+tub'}]},
-  {id:'tb4',cat:'Bathtubs',name:'Jetted Whirlpool Alcove Tub',price:1899,w:1.52,d:0.86,h:0.55,color:0xf5f2ee,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/jetted+whirlpool+tub'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=jetted+whirlpool+tub'}]},
-
-  // Storage & Accents
-  {id:'st1',cat:'Storage',name:'Recessed Medicine Cabinet 36"',price:399,w:0.91,d:0.1,h:0.76,color:0xd0cec8,
-   retailers:[{n:'HD',url:'https://www.homedepot.com/s/recessed+medicine+cabinet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=recessed+medicine+cabinet'}]},
-  {id:'st2',cat:'Storage',name:'Freestanding Linen Tower',price:299,w:0.46,d:0.36,h:1.83,color:0xf0ede8,
-   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=bathroom+linen+tower'},{n:'HD',url:'https://www.homedepot.com/s/bathroom+linen+tower'}]},
-  {id:'st3',cat:'Storage',name:'Heated Towel Rail 24"',price:249,w:0.61,d:0.1,h:0.76,color:0xc8c0b0,
-   retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=heated+towel+rail'},{n:'HD',url:'https://www.homedepot.com/s/heated+towel+rail'}]},
+  {id:'v1',cat:'Vanities',name:'Carrara Marble Double Vanity 60"',price:1299,w:1.52,d:0.55,h:0.9,color:0xf0ece6,retailers:[{n:'HD',url:'https://www.homedepot.com/s/marble+double+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=marble+double+vanity'}]},
+  {id:'v2',cat:'Vanities',name:'Walnut Floating Vanity 48"',price:849,w:1.22,d:0.46,h:0.85,color:0x5c3a1e,retailers:[{n:'HD',url:'https://www.homedepot.com/s/walnut+floating+vanity'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walnut+floating+vanity'}]},
+  {id:'v3',cat:'Vanities',name:'Matte White Single Vanity 36"',price:599,w:0.91,d:0.46,h:0.88,color:0xe8e4de,retailers:[{n:'HD',url:'https://www.homedepot.com/s/white+vanity+36'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=white+vanity+36+inch'}]},
+  {id:'v4',cat:'Vanities',name:'Navy & Brushed Gold Vanity 42"',price:1079,w:1.07,d:0.48,h:0.9,color:0x1a2744,retailers:[{n:'HD',url:'https://www.homedepot.com/s/navy+vanity'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=navy+vanity'}]},
+  {id:'v5',cat:'Vanities',name:'Terrazzo Top Vanity 54"',price:1499,w:1.37,d:0.52,h:0.9,color:0xd4cfc8,retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=terrazzo+vanity'}]},
+  {id:'t1',cat:'Toilets',name:'Kohler Elongated Smart Bidet',price:1499,w:0.38,d:0.72,h:0.78,color:0xfafaf8,retailers:[{n:'HD',url:'https://www.homedepot.com/s/kohler+smart+bidet+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=kohler+smart+toilet'}]},
+  {id:'t2',cat:'Toilets',name:'One-Piece Comfort Height',price:449,w:0.37,d:0.68,h:0.75,color:0xf8f6f2,retailers:[{n:'HD',url:'https://www.homedepot.com/s/one+piece+comfort+height+toilet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=one+piece+comfort+height+toilet'}]},
+  {id:'t3',cat:'Toilets',name:'Wall-Hung Toilet & Carrier',price:899,w:0.37,d:0.52,h:0.42,color:0xffffff,retailers:[{n:'HD',url:'https://www.homedepot.com/s/wall+hung+toilet'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=wall+hung+toilet'}]},
+  {id:'s1',cat:'Showers',name:'Rainfall Walk-In Enclosure 48×36',price:2799,w:1.22,d:0.91,h:2.2,color:0xd8eaf2,retailers:[{n:'HD',url:'https://www.homedepot.com/s/walk+in+shower+enclosure'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=walk+in+shower+enclosure'}]},
+  {id:'s2',cat:'Showers',name:'Frameless Corner Shower 36×36',price:1199,w:0.91,d:0.91,h:2.1,color:0xc8dde8,retailers:[{n:'HD',url:'https://www.homedepot.com/s/frameless+corner+shower'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=frameless+corner+shower'}]},
+  {id:'s3',cat:'Showers',name:'Steam Spa Cabin 48×48',price:4299,w:1.22,d:1.22,h:2.2,color:0xe8f0f5,retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=steam+shower+cabin'},{n:'HD',url:'https://www.homedepot.com/s/steam+shower+cabin'}]},
+  {id:'tb1',cat:'Bathtubs',name:'Freestanding Oval Soaking Tub',price:2199,w:1.72,d:0.76,h:0.65,color:0xf0ede8,retailers:[{n:'HD',url:'https://www.homedepot.com/s/freestanding+soaking+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=freestanding+soaking+tub'}]},
+  {id:'tb2',cat:'Bathtubs',name:'Clawfoot Cast Iron Tub',price:3199,w:1.68,d:0.76,h:0.72,color:0xfaf8f4,retailers:[{n:'LW',url:'https://www.lowes.com/search?searchTerm=clawfoot+cast+iron+tub'},{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=clawfoot+tub'}]},
+  {id:'tb3',cat:'Bathtubs',name:'Japanese Deep Soaking Tub',price:2999,w:1.22,d:0.86,h:0.76,color:0xe8e0d8,retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=japanese+soaking+tub'},{n:'HD',url:'https://www.homedepot.com/s/japanese+soaking+tub'}]},
+  {id:'tb4',cat:'Bathtubs',name:'Jetted Whirlpool Alcove Tub',price:1899,w:1.52,d:0.86,h:0.55,color:0xf5f2ee,retailers:[{n:'HD',url:'https://www.homedepot.com/s/jetted+whirlpool+tub'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=jetted+whirlpool+tub'}]},
+  {id:'st1',cat:'Storage',name:'Recessed Medicine Cabinet 36"',price:399,w:0.91,d:0.1,h:0.76,color:0xd0cec8,retailers:[{n:'HD',url:'https://www.homedepot.com/s/recessed+medicine+cabinet'},{n:'LW',url:'https://www.lowes.com/search?searchTerm=recessed+medicine+cabinet'}]},
+  {id:'st2',cat:'Storage',name:'Freestanding Linen Tower',price:299,w:0.46,d:0.36,h:1.83,color:0xf0ede8,retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=bathroom+linen+tower'},{n:'HD',url:'https://www.homedepot.com/s/bathroom+linen+tower'}]},
+  {id:'st3',cat:'Storage',name:'Heated Towel Rail 24"',price:249,w:0.61,d:0.1,h:0.76,color:0xc8c0b0,retailers:[{n:'WF',url:'https://www.wayfair.com/keyword.php?keyword=heated+towel+rail'},{n:'HD',url:'https://www.homedepot.com/s/heated+towel+rail'}]},
 ];
 
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    STATE
-═══════════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 let scene, camera, renderer, raycaster, mouse;
 let placedObjects = [], selectedObj = null;
 let isDragging = false, dragObj = null;
@@ -603,312 +652,209 @@ let cartItems = [];
 let savedDesigns = [];
 let currentUser = null;
 let currentDesignId = null;
-let roomDims = {w:8, d:8, h:3};
+let roomDims = {w:7.92, d:7.92, h:2.74}; // 26x26x9 feet in meters
 
-/* ═══════════════════════════════════════════════════
+function ft(f){ return f * 0.3048; }
+function m(v){ return Math.round(v * 39.37); }
+
+/* ═══════════════════════════════════════
    THREE.JS ENGINE
-═══════════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 function initThree(){
   const canvas = document.getElementById('three-canvas');
   const vp = document.getElementById('viewport');
+  const W = vp.clientWidth, H = vp.clientHeight;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x080807);
-  scene.fog = new THREE.FogExp2(0x080807, 0.04);
+  scene.background = new THREE.Color(0x0a0908);
+  scene.fog = new THREE.Fog(0x0a0908, 12, 22);
 
-  camera = new THREE.PerspectiveCamera(50, vp.clientWidth/vp.clientHeight, 0.1, 60);
+  camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 50);
   updateCamera();
 
   renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-  renderer.setSize(vp.clientWidth, vp.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(W, H);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  // Lighting — warm, spa-like
-  scene.add(new THREE.AmbientLight(0xfff5e8, 0.45));
-
-  const key = new THREE.DirectionalLight(0xfff3e0, 1.1);
-  key.position.set(4, 8, 5);
-  key.castShadow = true;
-  key.shadow.mapSize.set(2048,2048);
-  key.shadow.camera.left = -8; key.shadow.camera.right = 8;
-  key.shadow.camera.top = 8; key.shadow.camera.bottom = -8;
-  key.shadow.camera.far = 25;
-  scene.add(key);
-
-  const fill = new THREE.DirectionalLight(0xd0e4f8, 0.35);
-  fill.position.set(-5, 4, -4);
+  // Lights
+  scene.add(new THREE.AmbientLight(0xfff8f0, 0.6));
+  const sun = new THREE.DirectionalLight(0xfff5e6, 1.2);
+  sun.position.set(4,8,4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024,1024);
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xe8f0f8, 0.3);
+  fill.position.set(-3,4,-3);
   scene.add(fill);
 
-  const warm = new THREE.PointLight(0xfff0cc, 0.4, 12);
-  warm.position.set(0, 2.8, 0);
-  scene.add(warm);
-
-  buildRoom(roomDims);
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
 
+  buildRoom(roomDims);
+
+  // Events
   canvas.addEventListener('mousedown', onMouseDown);
   canvas.addEventListener('mousemove', onMouseMove);
   canvas.addEventListener('mouseup', onMouseUp);
   canvas.addEventListener('wheel', onWheel, {passive:true});
-  canvas.addEventListener('dblclick', ()=>{ if(selectedObj){ selectedObj.rotation.y += Math.PI/4; toast('Rotated 45°'); }});
+
   window.addEventListener('resize', ()=>{
-    camera.aspect = vp.clientWidth/vp.clientHeight;
+    const W = vp.clientWidth, H = vp.clientHeight;
+    camera.aspect = W/H;
     camera.updateProjectionMatrix();
-    renderer.setSize(vp.clientWidth, vp.clientHeight);
+    renderer.setSize(W,H);
   });
+
   animate();
 }
 
 function buildRoom({w,d,h}){
-  const clear = [];
-  scene.traverse(o=>{ if(o.userData.isRoom) clear.push(o); });
-  clear.forEach(o=>scene.remove(o));
+  // Remove old room objects
+  const toRemove = scene.children.filter(c=>c.userData.isRoom);
+  toRemove.forEach(o=>scene.remove(o));
 
-  const hw=w/2, hd=d/2;
+  const wallMat = new THREE.MeshLambertMaterial({color:0x141311, side:THREE.BackSide});
+  const floorMat = new THREE.MeshLambertMaterial({color:0x1a1816});
 
-  // Floor — warm dark tile
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(w,d),
-    new THREE.MeshLambertMaterial({color:0x1e1c18})
-  );
+  // Floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w,d), floorMat);
   floor.rotation.x = -Math.PI/2;
   floor.receiveShadow = true;
   floor.userData.isRoom = true;
-  floor.name = 'floor';
   scene.add(floor);
 
-  // Subtle grid
-  const grid = new THREE.GridHelper(Math.max(w,d), Math.max(w,d)*2, 0x2a2822, 0x1e1c18);
-  grid.position.y = 0.002;
+  // Room box (inside faces)
+  const room = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), wallMat);
+  room.position.y = h/2;
+  room.userData.isRoom = true;
+  scene.add(room);
+
+  // Grid
+  const grid = new THREE.GridHelper(Math.max(w,d)*1.5, Math.round(Math.max(w,d)*2), 0x2a2622, 0x1e1c18);
+  grid.position.y = 0.001;
   grid.userData.isRoom = true;
   scene.add(grid);
 
-  // Walls
-  const wallMat = new THREE.MeshLambertMaterial({color:0x161513, side:THREE.FrontSide});
-  [{pos:[0,h/2,-hd],rot:[0,0,0]},{pos:[0,h/2,hd],rot:[0,Math.PI,0]},
-   {pos:[-hw,h/2,0],rot:[0,Math.PI/2,0]},{pos:[hw,h/2,0],rot:[0,-Math.PI/2,0]}
-  ].forEach(({pos,rot})=>{
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(w,d),h), wallMat);
-    m.position.set(...pos); m.rotation.set(...rot);
-    m.receiveShadow = true; m.userData.isRoom = true;
-    scene.add(m);
-  });
-
-  // Update sqft stat
-  document.getElementById('stat-sqft').textContent = Math.round((w*3.28)*(d*3.28));
+  // Update sqft display
+  const wFt = Math.round(w/0.3048);
+  const dFt = Math.round(d/0.3048);
+  document.getElementById('stat-sqft').textContent = wFt * dFt;
 }
 
 function updateCamera(){
-  const x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-  const y = spherical.r * Math.cos(spherical.phi);
-  const z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
-  camera.position.set(x, y, z);
-  camera.lookAt(0, 0, 0);
+  const {theta,phi,r} = spherical;
+  camera.position.set(
+    r * Math.sin(phi) * Math.sin(theta),
+    r * Math.cos(phi),
+    r * Math.sin(phi) * Math.cos(theta)
+  );
+  camera.lookAt(0, 0.8, 0);
 }
 
+/* ═══════════════════════════════════════
+   MESH BUILDER — category-aware shapes
+═══════════════════════════════════════ */
 function makeMesh(prod){
-  const group = new THREE.Group();
-  const mat = new THREE.MeshLambertMaterial({color:prod.color});
-  const matDark = new THREE.MeshLambertMaterial({color:prod.color, opacity:0.85, transparent:true});
-  const matWhite = new THREE.MeshLambertMaterial({color:0xfafaf8});
-  const matChrome = new THREE.MeshLambertMaterial({color:0xc8c8c8});
-  const {w,h,d} = prod;
-  const cat = prod.cat;
-
-  if(cat === 'Toilets'){
-    // Bowl base
-    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(w*0.38, w*0.42, h*0.55, 16), mat);
-    bowl.position.y = h*0.28;
-    bowl.castShadow = true;
-    group.add(bowl);
-    // Tank
-    const tank = new THREE.Mesh(new THREE.BoxGeometry(w*0.7, h*0.45, d*0.35), mat);
-    tank.position.set(0, h*0.72, -d*0.3);
-    tank.castShadow = true;
-    group.add(tank);
-    // Seat
-    const seat = new THREE.Mesh(new THREE.CylinderGeometry(w*0.36, w*0.36, h*0.06, 16), matWhite);
-    seat.position.y = h*0.58;
-    group.add(seat);
-    // Lid
-    const lid = new THREE.Mesh(new THREE.CylinderGeometry(w*0.35, w*0.35, h*0.04, 16), matWhite);
-    lid.position.y = h*0.65;
-    group.add(lid);
-
-  } else if(cat === 'Vanities'){
-    // Main cabinet body
-    const cabinet = new THREE.Mesh(new THREE.BoxGeometry(w, h*0.85, d), mat);
-    cabinet.position.y = h*0.425;
-    cabinet.castShadow = true;
-    cabinet.receiveShadow = true;
-    group.add(cabinet);
-    // Countertop
-    const top = new THREE.Mesh(new THREE.BoxGeometry(w*1.02, h*0.06, d*1.02), matWhite);
-    top.position.y = h*0.88;
-    top.castShadow = true;
-    group.add(top);
-    // Sink bowl
-    const sink = new THREE.Mesh(new THREE.CylinderGeometry(w*0.15, w*0.12, h*0.06, 16), matWhite);
-    sink.position.set(0, h*0.91, 0);
-    group.add(sink);
-    // Cabinet door lines (left & right)
-    const doorL = new THREE.Mesh(new THREE.BoxGeometry(w*0.48, h*0.7, d*0.02), matDark);
-    doorL.position.set(-w*0.26, h*0.4, d*0.51);
-    group.add(doorL);
-    const doorR = new THREE.Mesh(new THREE.BoxGeometry(w*0.48, h*0.7, d*0.02), matDark);
-    doorR.position.set(w*0.26, h*0.4, d*0.51);
-    group.add(doorR);
-    // Handles
-    const handleL = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.08, 8), matChrome);
-    handleL.rotation.z = Math.PI/2;
-    handleL.position.set(-w*0.04, h*0.4, d*0.52);
-    group.add(handleL);
-    const handleR = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.08, 8), matChrome);
-    handleR.rotation.z = Math.PI/2;
-    handleR.position.set(w*0.04, h*0.4, d*0.52);
-    group.add(handleR);
-    // Faucet
-    const faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.04, 8), matChrome);
-    faucetBase.position.set(0, h*0.95, -d*0.1);
-    group.add(faucetBase);
-    const faucetNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8), matChrome);
-    faucetNeck.position.set(0, h*1.0, -d*0.1);
-    group.add(faucetNeck);
-
-  } else if(cat === 'Showers'){
-    // Floor pan
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), matWhite);
-    floor.position.y = 0.025;
-    floor.receiveShadow = true;
-    group.add(floor);
-    // Back wall
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.04), mat);
-    backWall.position.set(0, h/2, -d/2+0.02);
-    backWall.castShadow = true;
-    group.add(backWall);
-    // Side wall left
-    const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.04, h, d), mat);
-    sideL.position.set(-w/2+0.02, h/2, 0);
-    group.add(sideL);
-    // Glass door (right side, semi-transparent)
-    const glassMat = new THREE.MeshLambertMaterial({color:0xd0e8f0, transparent:true, opacity:0.25});
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.02, h*0.95, d*0.6), glassMat);
-    glass.position.set(w/2-0.01, h*0.475, d*0.2);
-    group.add(glass);
-    // Shower head
-    const showerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.3, 8), matChrome);
-    showerArm.position.set(-w*0.3, h*0.92, -d/2+0.15);
-    group.add(showerArm);
-    const showerHead = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 16), matChrome);
-    showerHead.rotation.x = Math.PI/2;
-    showerHead.position.set(-w*0.3, h*0.92, -d/2+0.3);
-    group.add(showerHead);
-
-  } else if(cat === 'Bathtubs'){
-    // Tub outer shell
-    const outer = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-    outer.position.y = h/2;
-    outer.castShadow = true;
-    outer.receiveShadow = true;
-    group.add(outer);
-    // Tub inner cavity
-    const innerMat = new THREE.MeshLambertMaterial({color:0xf8f5f0});
-    const inner = new THREE.Mesh(new THREE.BoxGeometry(w*0.88, h*0.7, d*0.82), innerMat);
-    inner.position.y = h*0.65;
-    group.add(inner);
-    // Rim
-    const rim = new THREE.Mesh(new THREE.BoxGeometry(w*1.01, h*0.06, d*1.01), matWhite);
-    rim.position.y = h*0.97;
-    group.add(rim);
-    // Faucet
-    const fBase = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8), matChrome);
-    fBase.position.set(w*0.3, h*1.02, 0);
-    group.add(fBase);
-    const fNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.15, 8), matChrome);
-    fNeck.position.set(w*0.3, h*1.1, 0);
-    group.add(fNeck);
-    // Drain
-    const drain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 8), matChrome);
-    drain.position.set(0, h*0.3, 0);
-    group.add(drain);
-
-  } else if(cat === 'Storage'){
-    // Main body
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-    body.position.y = h/2;
-    body.castShadow = true;
-    body.receiveShadow = true;
-    group.add(body);
-    // Shelves
-    const shelfCount = Math.max(2, Math.floor(h/0.4));
-    for(let i=1; i<shelfCount; i++){
-      const shelf = new THREE.Mesh(new THREE.BoxGeometry(w*0.96, 0.02, d*0.96), matDark);
-      shelf.position.y = (h/shelfCount)*i;
-      group.add(shelf);
-    }
-    // Door
-    const door = new THREE.Mesh(new THREE.BoxGeometry(w*0.96, h*0.96, d*0.02), matDark);
-    door.position.set(0, h/2, d/2+0.01);
-    group.add(door);
-    // Handle
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06, 8), matChrome);
-    handle.rotation.x = Math.PI/2;
-    handle.position.set(w*0.3, h/2, d/2+0.03);
-    group.add(handle);
-
-  } else {
-    // Default box for unknown categories
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-    mesh.position.y = h/2;
+  const g = new THREE.Group();
+  const {w,h,d,cat,color} = prod;
+  const mat = ()=> new THREE.MeshLambertMaterial({color});
+  const matW = ()=> new THREE.MeshLambertMaterial({color:0xfaf8f4});
+  const matC = ()=> new THREE.MeshLambertMaterial({color:0xb8b8b8});
+  const matG = ()=> new THREE.MeshLambertMaterial({color:0xd0e8f0,transparent:true,opacity:0.25});
+  const box = (bw,bh,bd,m,x,y,z)=>{
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd), m);
+    mesh.position.set(x||0,y||0,z||0);
     mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    group.add(mesh);
+    g.add(mesh);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), new THREE.LineBasicMaterial({color:0x1a1814,transparent:true,opacity:0.5}));
+    mesh.add(edges);
+    return mesh;
+  };
+  const cyl = (rt,rb,ch,m,x,y,z,rx)=>{
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,ch,16), m);
+    mesh.position.set(x||0,y||0,z||0);
+    if(rx) mesh.rotation.x = rx;
+    g.add(mesh);
+    return mesh;
+  };
+
+  if(cat==='Toilets'){
+    cyl(w*0.38,w*0.42,h*0.55,mat(),0,h*0.28,0);
+    box(w*0.7,h*0.45,d*0.35,mat(),0,h*0.72,-d*0.3);
+    cyl(w*0.36,w*0.36,h*0.06,matW(),0,h*0.58,0);
+    cyl(w*0.34,w*0.34,h*0.04,matW(),0,h*0.65,0);
+  } else if(cat==='Vanities'){
+    box(w,h*0.85,d,mat(),0,h*0.425,0);
+    box(w*1.02,h*0.06,d*1.02,matW(),0,h*0.88,0);
+    cyl(w*0.12,w*0.1,h*0.05,matW(),0,h*0.91,0);
+    box(w*0.47,h*0.7,d*0.02,mat(),(-w*0.26),h*0.4,d*0.51);
+    box(w*0.47,h*0.7,d*0.02,mat(),(w*0.26),h*0.4,d*0.51);
+    cyl(0.01,0.01,0.08,matC(),-w*0.04,h*0.4,d*0.52,0); g.children[g.children.length-1].rotation.z=Math.PI/2;
+    cyl(0.01,0.01,0.08,matC(),w*0.04,h*0.4,d*0.52,0); g.children[g.children.length-1].rotation.z=Math.PI/2;
+    cyl(0.02,0.02,0.04,matC(),0,h*0.95,-d*0.1);
+    cyl(0.012,0.012,0.12,matC(),0,h*1.02,-d*0.1);
+  } else if(cat==='Showers'){
+    box(w,0.05,d,matW(),0,0.025,0);
+    box(w,h,0.04,mat(),0,h/2,-d/2+0.02);
+    box(0.04,h,d,mat(),-w/2+0.02,h/2,0);
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.02,h*0.95,d*0.6), matG());
+    glass.position.set(w/2-0.01,h*0.475,d*0.2); g.add(glass);
+    cyl(0.015,0.015,0.3,matC(),-w*0.3,h*0.92,-d/2+0.15);
+    cyl(0.06,0.06,0.02,matC(),-w*0.3,h*0.92,-d/2+0.3,Math.PI/2);
+  } else if(cat==='Bathtubs'){
+    box(w,h,d,mat(),0,h/2,0);
+    box(w*0.88,h*0.7,d*0.82,matW(),0,h*0.65,0);
+    box(w*1.01,h*0.06,d*1.01,matW(),0,h*0.97,0);
+    cyl(0.025,0.025,0.06,matC(),w*0.3,h*1.03,0);
+    cyl(0.015,0.015,0.16,matC(),w*0.3,h*1.12,0);
+    cyl(0.03,0.03,0.02,matC(),0,h*0.3,0);
+  } else if(cat==='Storage'){
+    box(w,h,d,mat(),0,h/2,0);
+    const shelves = Math.max(2,Math.floor(h/0.4));
+    for(let i=1;i<shelves;i++) box(w*0.94,0.02,d*0.94,mat(),0,(h/shelves)*i,0);
+    box(w*0.95,h*0.95,d*0.02,mat(),0,h/2,d/2+0.01);
+    cyl(0.01,0.01,0.06,matC(),w*0.3,h/2,d/2+0.03,0); g.children[g.children.length-1].rotation.x=Math.PI/2;
+  } else {
+    box(w,h,d,mat(),0,h/2,0);
   }
 
-  // Add wireframe edges to all children for definition
-  group.traverse(child => {
-    if(child.isMesh && child.material.opacity !== 0.25){
-      const edges = new THREE.LineSegments(
-        new THREE.EdgesGeometry(child.geometry),
-        new THREE.LineBasicMaterial({color:0x2a2622, transparent:true, opacity:0.4})
-      );
-      child.add(edges);
-    }
-  });
-
-  // Store metadata on group
-  group.userData = {productId:prod.id, product:{...prod}, baseColor:prod.color};
-
-  // Add emissive capability by storing reference to main mesh
-  group.material = mat;
-  group.material.emissive = new THREE.Color(0x000000);
-  group.material.emissiveIntensity = 0;
-
-  return group;
+  g.userData = {productId:prod.id, product:{...prod}};
+  return g;
 }
 
-function applyRoomDims(){
-  const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
-  const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
-  const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
-  roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
-  document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
-  if(scene) buildRoom(roomDims);
-  document.getElementById('room-dims-modal').style.display = 'none';
-  toast(`Room updated: ${wFt}×${dFt}ft`);
-}
-
-function updateRoomDims(){
-  // Called from scan overlay — sets defaults without needing modal
-  const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
-  const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
-  const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
-  roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
-  document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
-  if(scene) buildRoom(roomDims);
+/* ═══════════════════════════════════════
+   SELECTION & INTERACTION
+═══════════════════════════════════════ */
+function selectObject(root){
+  // Deselect previous
+  if(selectedObj){
+    selectedObj.traverse(c=>{
+      if(c.isMesh && c.material && c.material.opacity !== 0.25){
+        c.material.emissive = new THREE.Color(0x000000);
+        c.material.emissiveIntensity = 0;
+      }
+    });
+  }
+  selectedObj = root || null;
+  const bar = document.getElementById('selected-actions');
+  if(selectedObj && selectedObj.userData.productId){
+    selectedObj.traverse(c=>{
+      if(c.isMesh && c.material && c.material.opacity !== 0.25){
+        c.material.emissive = new THREE.Color(0xc9a96e);
+        c.material.emissiveIntensity = 0.15;
+      }
+    });
+    const p = selectedObj.userData.product;
+    document.getElementById('selected-info').textContent = p.name + ' · $' + p.price.toLocaleString();
+    document.getElementById('selected-label').textContent = p.name;
+    bar.style.display = 'flex';
+  } else {
+    selectedObj = null;
+    document.getElementById('selected-info').textContent = 'Nothing selected';
+    bar.style.display = 'none';
+  }
 }
 
 function removeSelected(){
@@ -918,7 +864,7 @@ function removeSelected(){
   placedObjects = placedObjects.filter(o=>o!==selectedObj);
   cartItems = cartItems.filter(c=>c.id!==id);
   selectObject(null);
-  updateStats(); renderCart(); renderDesigns();
+  updateStats(); renderCart();
   toast('Item removed');
 }
 
@@ -928,80 +874,50 @@ function rotateSelected(){
   toast('Rotated 45°');
 }
 
-function selectObject(obj){
-  // Get the root group
-  const root = obj?.userData?.productId ? obj : obj?.parent;
-
-  if(selectedObj){
-    selectedObj.traverse(child=>{
-      if(child.isMesh && child.material){
-        child.material.emissive = new THREE.Color(0x000000);
-        child.material.emissiveIntensity = 0;
-      }
-    });
-  }
-
-  selectedObj = root || null;
-  const actionsBar = document.getElementById('selected-actions');
-  const selectedLabel = document.getElementById('selected-label');
-
-  if(selectedObj && selectedObj.userData?.productId){
-    selectedObj.traverse(child=>{
-      if(child.isMesh && child.material && child.material.opacity !== 0.25){
-        child.material.emissive = new THREE.Color(0xc9a96e);
-        child.material.emissiveIntensity = 0.18;
-      }
-    });
-    const p = selectedObj.userData.product;
-    document.getElementById('selected-info').textContent = `${p.name} · $${p.price.toLocaleString()}`;
-    if(actionsBar) actionsBar.style.display = 'flex';
-    if(selectedLabel) selectedLabel.textContent = p.name;
-  } else {
-    selectedObj = null;
-    document.getElementById('selected-info').textContent = 'Nothing selected';
-    if(actionsBar) actionsBar.style.display = 'none';
-  }
-}
-
-function getFloorHit(mx, my){
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((mx-rect.left)/rect.width)*2-1;
-  mouse.y = -((my-rect.top)/rect.height)*2+1;
+function getFloorPoint(clientX, clientY){
+  const vp = document.getElementById('viewport');
+  const rect = vp.getBoundingClientRect();
+  mouse.x = ((clientX-rect.left)/rect.width)*2-1;
+  mouse.y = -((clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(mouse, camera);
   const plane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
-  const t = new THREE.Vector3();
-  return raycaster.ray.intersectPlane(plane, t) ? t : null;
+  const target = new THREE.Vector3();
+  raycaster.ray.intersectPlane(plane, target);
+  return target;
 }
 
 function onMouseDown(e){
-  const rect = e.target.getBoundingClientRect();
+  if(e.button !== 0) return;
+  const vp = document.getElementById('viewport');
+  const rect = vp.getBoundingClientRect();
   mouse.x = ((e.clientX-rect.left)/rect.width)*2-1;
   mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
   raycaster.setFromCamera(mouse, camera);
 
-  // Collect all child meshes from placed groups
-  const allMeshes = [];
-  placedObjects.forEach(g => g.traverse(c=>{ if(c.isMesh) allMeshes.push(c); }));
-  const hits = raycaster.intersectObjects(allMeshes, false);
+  // Collect all child meshes
+  const meshes = [];
+  placedObjects.forEach(g=>g.traverse(c=>{if(c.isMesh) meshes.push(c);}));
+  const hits = raycaster.intersectObjects(meshes, false);
 
   if(hits.length){
-    // Walk up to root group with productId
     let obj = hits[0].object;
     while(obj.parent && !obj.userData.productId) obj = obj.parent;
-
     if(obj.userData.productId){
-      selectObject(obj);
-      if(mode==='move'){ isDragging=true; dragObj=obj; }
       if(mode==='delete'){
         scene.remove(obj);
         placedObjects = placedObjects.filter(o=>o!==obj);
         cartItems = cartItems.filter(c=>c.id!==obj.userData.productId);
-        selectObject(null);
-        updateStats(); renderCart(); toast('Removed');
+        if(selectedObj===obj) selectObject(null);
+        updateStats(); renderCart();
+        toast('Removed');
+      } else {
+        selectObject(obj);
+        isDragging = true;
+        dragObj = obj;
       }
     }
   } else {
-    if(selectedObj) selectObject(null);
+    selectObject(null);
     isOrbiting = true;
     orbitStart = {x:e.clientX, y:e.clientY, theta:spherical.theta, phi:spherical.phi};
   }
@@ -1010,62 +926,50 @@ function onMouseDown(e){
 function onMouseMove(e){
   if(isOrbiting && orbitStart){
     spherical.theta = orbitStart.theta - (e.clientX-orbitStart.x)*0.005;
-    spherical.phi = Math.max(0.12, Math.min(1.52, orbitStart.phi+(e.clientY-orbitStart.y)*0.005));
-    updateCamera(); return;
+    spherical.phi = Math.max(0.1, Math.min(1.5, orbitStart.phi+(e.clientY-orbitStart.y)*0.005));
+    updateCamera();
+    return;
   }
-  if(!isDragging||!dragObj) return;
-
-  const rect = renderer.domElement.getBoundingClientRect();
-
-  // Show trash zone when dragging toward the right edge (sidebar)
-  const trashZone = document.getElementById('trash-zone');
-  if(trashZone){
-    const nearEdge = e.clientX > rect.right - 100;
-    trashZone.style.opacity = nearEdge ? '1' : '0';
-  }
-
-  const t = getFloorHit(e.clientX, e.clientY);
-  if(t){
-    const p = dragObj.userData.product;
-    const hw=roomDims.w/2, hd=roomDims.d/2;
-    dragObj.position.x = Math.max(-hw+p.w/2, Math.min(hw-p.w/2, t.x));
-    dragObj.position.y = 0; // Always on floor
-    dragObj.position.z = Math.max(-hd+p.d/2, Math.min(hd-p.d/2, t.z));
-  }
+  if(!isDragging || !dragObj) return;
+  const pt = getFloorPoint(e.clientX, e.clientY);
+  if(!pt) return;
+  const p = dragObj.userData.product;
+  const hw = roomDims.w/2 - p.w/2;
+  const hd = roomDims.d/2 - p.d/2;
+  dragObj.position.x = Math.max(-hw, Math.min(hw, pt.x));
+  dragObj.position.y = 0;
+  dragObj.position.z = Math.max(-hd, Math.min(hd, pt.z));
 }
 
-function onMouseUp(e){
-  if(isDragging && dragObj){
-    const rect = renderer.domElement.getBoundingClientRect();
-    // If released over the sidebar (right side) — remove the item
-    if(e.clientX > rect.right - 10){
-      const id = dragObj.userData.productId;
-      scene.remove(dragObj);
-      placedObjects = placedObjects.filter(o=>o!==dragObj);
-      cartItems = cartItems.filter(c=>c.id!==id);
-      if(selectedObj === dragObj) selectObject(null);
-      updateStats(); renderCart(); renderDesigns();
-      toast('Item removed');
-    }
-    // Hide trash zone
-    const trashZone = document.getElementById('trash-zone');
-    if(trashZone) trashZone.style.opacity = '0';
-  }
-  isDragging=false; dragObj=null; isOrbiting=false; orbitStart=null;
+function onMouseUp(){
+  isDragging = false; dragObj = null;
+  isOrbiting = false; orbitStart = null;
 }
-function onWheel(e){ spherical.r = Math.max(2.5, Math.min(18, spherical.r+e.deltaY*0.012)); updateCamera(); }
-function animate(){ requestAnimationFrame(animate); renderer.render(scene, camera); }
 
-/* ═══════════════════════════════════════════════════
-   PLACEMENT & CART
-═══════════════════════════════════════════════════ */
-function dropProduct(id){
+function onWheel(e){
+  spherical.r = Math.max(2, Math.min(18, spherical.r + e.deltaY*0.01));
+  updateCamera();
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+/* ═══════════════════════════════════════
+   PLACE / REMOVE PRODUCTS
+═══════════════════════════════════════ */
+function placeProduct(id){
   const prod = PRODUCTS.find(p=>p.id===id);
   if(!prod) return;
   const mesh = makeMesh(prod);
-  const hw=roomDims.w/2-prod.w/2, hd=roomDims.d/2-prod.d/2;
-  // y=0 so group sits on floor — internal geometry handles height offsets
-  mesh.position.set((Math.random()-0.5)*Math.max(0.1,hw), 0, (Math.random()-0.5)*Math.max(0.1,hd));
+  const hw = roomDims.w/2 - prod.w/2;
+  const hd = roomDims.d/2 - prod.d/2;
+  mesh.position.set(
+    (Math.random()-0.5) * Math.max(0.2, hw),
+    0,
+    (Math.random()-0.5) * Math.max(0.2, hd)
+  );
   scene.add(mesh);
   placedObjects.push(mesh);
   selectObject(mesh);
@@ -1073,456 +977,369 @@ function dropProduct(id){
     cartItems.push({...prod});
     updateStats(); renderCart();
   }
-  toast(`${prod.name} placed`);
+  toast(prod.name + ' placed — drag to position');
 }
 
 function removeFromCart(id){
   cartItems = cartItems.filter(c=>c.id!==id);
-  const mesh = placedObjects.find(o=>o.userData.productId===id);
-  if(mesh){ scene.remove(mesh); placedObjects=placedObjects.filter(o=>o!==mesh); }
+  const obj = placedObjects.find(o=>o.userData.productId===id);
+  if(obj){ scene.remove(obj); placedObjects = placedObjects.filter(o=>o!==obj); }
   if(selectedObj?.userData.productId===id) selectObject(null);
   updateStats(); renderCart();
 }
 
+/* ═══════════════════════════════════════
+   STATS
+═══════════════════════════════════════ */
 function updateStats(){
   const total = cartItems.reduce((a,c)=>a+c.price,0);
   document.getElementById('stat-items').textContent = placedObjects.length;
-  document.getElementById('stat-total').textContent = total > 999 ? `$${(total/1000).toFixed(1)}k` : `$${total}`;
-  document.getElementById('cart-badge').textContent = cartItems.length > 0 ? ` (${cartItems.length})` : '';
+  document.getElementById('stat-total').textContent = total >= 1000 ? '$'+(total/1000).toFixed(1)+'k' : '$'+total;
+  document.getElementById('cart-badge').textContent = cartItems.length ? ' ('+cartItems.length+')' : '';
 }
 
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════
    RENDER PANELS
-═══════════════════════════════════════════════════ */
-function m(v){ return Math.round(v*39.37); }
-
-function buildProductPanel(filter=''){
+═══════════════════════════════════════ */
+function renderCatalog(filter=''){
+  const panel = document.getElementById('panel-catalog');
   const cats = [...new Set(PRODUCTS.map(p=>p.cat))];
-  const panel = document.getElementById('products-panel');
   let html = '';
   cats.forEach(cat=>{
     const items = PRODUCTS.filter(p=>p.cat===cat && (!filter || p.name.toLowerCase().includes(filter.toLowerCase())));
     if(!items.length) return;
     html += `<div class="cat-label">${cat}</div>`;
     items.forEach(p=>{
-      const badges = p.retailers.map(r=>`
-        <a class="badge badge-${r.n.toLowerCase()}" href="${r.url}" target="_blank" onclick="event.stopPropagation()">${r.n==='HD'?'Home Depot':r.n==='LW'?"Lowe's":'Wayfair'}</a>
-      `).join('');
-      html += `
-        <div class="product-card" onclick="dropProduct('${p.id}')">
+      html += `<div class="product-card" onclick="placeProduct('${p.id}')">
+        <div>
           <div class="product-name">${p.name}</div>
           <div class="product-dims">${m(p.w)}"W × ${m(p.d)}"D × ${m(p.h)}"H</div>
-          <div class="product-foot">
-            <div class="product-price">$${p.price.toLocaleString()}</div>
-            <div class="retailer-badges">${badges}</div>
-          </div>
-        </div>`;
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="product-price">$${p.price.toLocaleString()}</div>
+          <div class="add-icon">+</div>
+        </div>
+      </div>`;
     });
   });
-  if(!html) html = '<div class="empty-state"><div class="empty-state-icon">◯</div>No products match your search.</div>';
-  panel.innerHTML = html;
+  panel.innerHTML = html || '<div class="empty-state"><div class="empty-icon">◯</div>No fixtures match your search.</div>';
 }
 
-function filterProducts(v){ buildProductPanel(v); }
+function filterProducts(v){ renderCatalog(v); }
 
 function renderCart(){
-  const panel = document.getElementById('cart-panel');
+  const panel = document.getElementById('panel-cart');
   if(!cartItems.length){
-    panel.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◯</div>Your cart is empty.<br>Click any product to add it to your room.</div>';
+    panel.innerHTML = '<div class="empty-state"><div class="empty-icon">◯</div>Your cart is empty.<br>Click any fixture to add it.</div>';
     return;
   }
   const total = cartItems.reduce((a,c)=>a+c.price,0);
   const hdItems = cartItems.filter(c=>c.retailers.some(r=>r.n==='HD'));
   const lwItems = cartItems.filter(c=>c.retailers.some(r=>r.n==='LW'));
-  panel.innerHTML = cartItems.map(c=>`
+  const wfItems = cartItems.filter(c=>c.retailers.some(r=>r.n==='WF'));
+  let html = cartItems.map(c=>`
     <div class="cart-item">
       <div class="cart-item-name">${c.name}<br><span style="font-size:10px;color:var(--text3)">${m(c.w)}"W × ${m(c.d)}"D</span></div>
       <div class="cart-item-price">$${c.price.toLocaleString()}</div>
-      <button class="cart-remove" onclick="removeFromCart('${c.id}')" title="Remove">×</button>
+      <button class="cart-remove" onclick="removeFromCart('${c.id}')">×</button>
+    </div>`).join('');
+  html += `<div class="cart-total">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Estimated Total</span>
+      <span class="cart-total-amt">$${total.toLocaleString()}</span>
     </div>
-  `).join('') + `
-    <div class="cart-total">
-      <div class="cart-total-row">
-        <span class="cart-total-label">Estimated Total</span>
-        <span class="cart-total-amt">$${total.toLocaleString()}</span>
-      </div>
-      <div class="cart-note">Prices are estimates. Confirm pricing at checkout. Taxes & installation not included.</div>
-      <div class="shop-btns">
-        ${hdItems.length?`<a class="shop-btn hd" href="https://www.homedepot.com" target="_blank">Home Depot (${hdItems.length})</a>`:''}
-        ${lwItems.length?`<a class="shop-btn lw" href="https://www.lowes.com" target="_blank">Lowe's (${lwItems.length})</a>`:''}
-      </div>
-    </div>`;
+    <div class="cart-note">Estimates only. Taxes & installation not included.</div>
+    <div class="shop-btns">
+      ${hdItems.length?`<a class="shop-btn hd" href="https://www.homedepot.com" target="_blank">Home Depot (${hdItems.length})</a>`:''}
+      ${lwItems.length?`<a class="shop-btn lw" href="https://www.lowes.com" target="_blank">Lowe's (${lwItems.length})</a>`:''}
+      ${wfItems.length?`<a class="shop-btn wf" href="https://www.wayfair.com" target="_blank">Wayfair (${wfItems.length})</a>`:''}
+    </div>
+  </div>`;
+  panel.innerHTML = html;
 }
 
 async function renderDesigns(){
-  const panel = document.getElementById('designs-panel');
+  const panel = document.getElementById('panel-designs');
   let designs = [];
-
   if(currentUser && window.supabase){
     const {data} = await supabase.from('designs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
     designs = (data||[]).map(d=>({
-      ...d,
-      items: d.placements?.length||0,
-      total: d.total_estimate||0,
-      date: new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+      ...d, items:d.placements?.length||0, total:d.total_estimate||0,
+      date:new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
     }));
     savedDesigns = designs;
-  } else {
-    designs = savedDesigns;
   }
-
   if(!designs.length){
-    panel.innerHTML = currentUser
-      ? `<div style="text-align:center;padding:28px 16px;color:var(--text3);font-size:12px;line-height:1.8">
-           No saved designs yet.<br/>Add fixtures above and click <strong style="color:var(--text2)">Save</strong> to save your first design.
-         </div>`
-      : `<div style="text-align:center;padding:28px 16px;color:var(--text3);font-size:12px;line-height:1.8">
-           <a href="/auth.html" style="color:var(--gold)">Sign in</a> to save and reload your designs from any device.
-         </div>`;
+    panel.innerHTML = `<div class="empty-state"><div class="empty-icon">◯</div>${currentUser?'No saved designs yet.<br>Add fixtures and click Save.':'<a href="/auth.html" class="gold-link">Sign in</a> to save and reload designs.'}</div>`;
     return;
   }
-
   panel.innerHTML = designs.map((d,i)=>`
-    <div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div style="font-size:12px;font-weight:500;color:var(--text)">${d.name}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
-        </div>
-        ${d.id === currentDesignId ? `<div style="font-size:9px;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;background:var(--gold-dim);padding:2px 8px;border-radius:10px;border:0.5px solid var(--gold-mid)">Editing</div>` : ''}
+    <div class="saved-card">
+      <div class="saved-card-info">
+        <div class="saved-card-name">${d.name||'Untitled'}</div>
+        <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
       </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="loadDesign(${i})" style="flex:1;background:var(--gold-dim);color:var(--gold);border:0.5px solid var(--gold-mid);border-radius:6px;padding:6px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.2s" onmouseover="this.style.background='var(--gold)';this.style.color='var(--bg)'" onmouseout="this.style.background='var(--gold-dim)';this.style.color='var(--gold)'">
-          ${d.id === currentDesignId ? '↺ Reload' : '✏ Open & Edit'}
-        </button>
-        <button onclick="deleteDesign('${d.id||''}',${i})" style="background:transparent;color:var(--text3);border:0.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+      <div class="saved-card-actions">
+        ${d.id===currentDesignId?'<span class="editing-badge">Editing</span>':''}
+        <button class="saved-card-btn" onclick="loadDesign('${d.id}','${(d.name||'').replace(/'/g,'')}')">${d.id===currentDesignId?'↺':'✏'} Open</button>
+        <button class="saved-card-btn danger" onclick="deleteDesign('${d.id}')">✕</button>
       </div>
-    </div>
-  `).join('') + `
-    <a href="/profile.html" style="display:block;text-align:center;font-size:10px;color:var(--text3);text-decoration:none;padding:8px;letter-spacing:0.04em;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text3)'">Manage all designs on My Profile →</a>
-  `;
+    </div>`).join('') +
+    `<div style="text-align:center;padding:12px"><a href="/profile.html" class="gold-link">Manage all designs →</a></div>`;
 }
 
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+function switchTab(tab){
+  ['catalog','cart','designs'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+  });
+  document.getElementById('search-wrap').style.display = tab==='catalog' ? 'block' : 'none';
+  if(tab==='designs') renderDesigns();
+}
+
+/* ═══════════════════════════════════════
+   SAVE / LOAD
+═══════════════════════════════════════ */
 async function saveDesign(){
-  const nameEl = document.getElementById('design-name');
-  const statusEl = document.getElementById('save-status');
-  const name = nameEl?.value.trim() || 'My Design';
-  const placements = placedObjects.map(o=>({id:o.userData.productId, x:+o.position.x.toFixed(2), z:+o.position.z.toFixed(2), ry:+o.rotation.y.toFixed(2)}));
+  const name = document.getElementById('design-name').value.trim() || 'My Design';
+  const placements = placedObjects.map(o=>({id:o.userData.productId, x:+o.position.x.toFixed(3), z:+o.position.z.toFixed(3), ry:+o.rotation.y.toFixed(3)}));
   const total_estimate = cartItems.reduce((a,c)=>a+c.price,0);
+  const statusEl = document.getElementById('save-status');
 
   if(currentUser && window.supabase){
     if(currentDesignId){
-      await supabase.from('designs').update({name, placements, total_estimate, room_scan:roomDims}).eq('id', currentDesignId);
+      await supabase.from('designs').update({name, placements, total_estimate, room_scan:roomDims}).eq('id',currentDesignId);
     } else {
       const {data} = await supabase.from('designs').insert({user_id:currentUser.id, name, placements, total_estimate, room_scan:roomDims}).select().single();
       if(data) currentDesignId = data.id;
     }
-    const now = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    if(statusEl) statusEl.textContent = `✓ Saved at ${now}`;
-    setTimeout(()=>{ if(statusEl) statusEl.textContent = ''; }, 4000);
+    const t = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    statusEl.textContent = '✓ Saved at '+t;
+    setTimeout(()=>statusEl.textContent='', 4000);
   } else {
-    // Fallback to localStorage if not logged in
-    const design = {name, date:new Date().toLocaleDateString(), items:cartItems.length, total:total_estimate, placements};
-    savedDesigns.unshift(design);
-    try{ localStorage.setItem('myspa_designs', JSON.stringify(savedDesigns)); }catch(e){}
-    if(statusEl) statusEl.textContent = 'Sign in to save to your account';
+    statusEl.textContent = 'Sign in to save designs';
+    setTimeout(()=>statusEl.textContent='', 3000);
   }
-  await renderDesigns();
   toast('Design saved!');
+  renderDesigns();
 }
 
-async function loadDesignById(id){
+async function loadDesign(id, name){
+  if(!window.supabase) return;
   const {data:d} = await supabase.from('designs').select('*').eq('id',id).single();
   if(!d) return;
   currentDesignId = d.id;
-  const nameEl = document.getElementById('design-name');
-  if(nameEl) nameEl.value = d.name || '';
-  const statusEl = document.getElementById('save-status');
-  if(statusEl) statusEl.textContent = `Editing: ${d.name}`;
+  document.getElementById('design-name').value = d.name || '';
+  document.getElementById('save-status').textContent = 'Editing: '+d.name;
+  // Clear scene
   placedObjects.forEach(o=>scene.remove(o));
   placedObjects = []; cartItems = [];
+  // Restore room
+  if(d.room_scan) roomDims = d.room_scan;
+  buildRoom(roomDims);
+  // Restore fixtures
   (d.placements||[]).forEach(pl=>{
     const prod = PRODUCTS.find(p=>p.id===pl.id);
     if(!prod) return;
     const mesh = makeMesh(prod);
     mesh.position.set(pl.x, 0, pl.z);
-    mesh.rotation.y = pl.ry;
+    mesh.rotation.y = pl.ry || 0;
     scene.add(mesh);
     placedObjects.push(mesh);
     if(!cartItems.find(c=>c.id===prod.id)) cartItems.push({...prod});
   });
   updateStats(); renderCart(); renderDesigns();
-  toast(`Loaded: ${d.name} — make changes and click Save`);
+  toast('Loaded: '+d.name+' — edit and click Save');
 }
 
-function loadDesign(i){
-  const d = savedDesigns[i];
-  if(!d) return;
-  if(d.id){ loadDesignById(d.id); return; }
-  currentDesignId = null;
-  const nameEl = document.getElementById('design-name');
-  if(nameEl) nameEl.value = d.name || '';
-  placedObjects.forEach(o=>scene.remove(o));
-  placedObjects = []; cartItems = [];
-  (d.placements||[]).forEach(pl=>{
-    const prod = PRODUCTS.find(p=>p.id===pl.id);
-    if(!prod) return;
-    const mesh = makeMesh(prod);
-    mesh.position.set(pl.x, 0, pl.z);
-    mesh.rotation.y = pl.ry;
-    scene.add(mesh);
-    placedObjects.push(mesh);
-    if(!cartItems.find(c=>c.id===prod.id)) cartItems.push({...prod});
-  });
-  updateStats(); renderCart(); renderDesigns();
-  toast(`Loaded: ${d.name} — make changes and click Save`);
-}
-
-async function deleteDesign(id, index){
+async function deleteDesign(id){
   if(!confirm('Delete this design? This cannot be undone.')) return;
-  if(id && window.supabase){
-    await supabase.from('designs').delete().eq('id', id);
-    if(currentDesignId === id){
-      currentDesignId = null;
-      const nameEl = document.getElementById('design-name');
-      if(nameEl) nameEl.value = '';
-      const statusEl = document.getElementById('save-status');
-      if(statusEl) statusEl.textContent = '';
-    }
-  } else {
-    savedDesigns.splice(index, 1);
-    try{ localStorage.setItem('myspa_designs', JSON.stringify(savedDesigns)); }catch(e){}
+  await supabase.from('designs').delete().eq('id',id);
+  if(currentDesignId===id){
+    currentDesignId=null;
+    document.getElementById('design-name').value='';
+    document.getElementById('save-status').textContent='';
   }
-  await renderDesigns();
+  renderDesigns();
   toast('Design deleted');
 }
 
-/* ── Share Design ── */
-async function shareDesign(){
-  const modal = document.getElementById('share-modal');
-  modal.classList.add('show');
-
-  if(!currentDesignId){
-    document.getElementById('share-not-saved').style.display = 'block';
-    document.getElementById('share-content').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('share-not-saved').style.display = 'none';
-  document.getElementById('share-content').style.display = 'block';
-
-  const shareUrl = `${window.location.origin}/editor.html?design=${currentDesignId}`;
-  document.getElementById('share-url').textContent = shareUrl;
-
-  // Check current public status
-  if(window.supabase && currentDesignId){
-    const {data} = await supabase.from('designs').select('is_public').eq('id', currentDesignId).single();
-    const isPublic = data?.is_public || false;
-    const toggle = document.getElementById('public-toggle');
-    const slider = document.getElementById('public-slider');
-    const knob = document.getElementById('public-knob');
-    const label = document.getElementById('public-label');
-    toggle.checked = isPublic;
-    slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
-    knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
-    label.textContent = isPublic ? 'Public — contractors can bid on this' : 'Private — only you can see this';
-  }
+/* ═══════════════════════════════════════
+   ROOM DIMENSIONS
+═══════════════════════════════════════ */
+function applyRoomDims(){
+  const wFt = parseFloat(document.getElementById('room-w').value)||26;
+  const dFt = parseFloat(document.getElementById('room-d').value)||26;
+  const hFt = parseFloat(document.getElementById('room-h').value)||9;
+  roomDims = {w:wFt*0.3048, d:dFt*0.3048, h:hFt*0.3048};
+  buildRoom(roomDims);
+  closeModal('modal-room');
+  toast('Room updated: '+wFt+'×'+dFt+'ft, '+hFt+'ft ceiling');
 }
 
-async function togglePublicFromEditor(isPublic){
-  if(!currentDesignId || !window.supabase) return;
-  await supabase.from('designs').update({is_public: isPublic}).eq('id', currentDesignId);
-  const slider = document.getElementById('public-slider');
-  const knob = document.getElementById('public-knob');
-  const label = document.getElementById('public-label');
-  slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
-  knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
-  label.textContent = isPublic ? 'Public — contractors can bid on this' : 'Private — only you can see this';
-  toast(isPublic ? 'Design is now public — contractors can bid!' : 'Design set to private');
+/* ═══════════════════════════════════════
+   SHARE & EXPORT
+═══════════════════════════════════════ */
+async function openShare(){
+  if(!currentDesignId){
+    document.getElementById('share-not-saved').style.display='block';
+    document.getElementById('share-content').style.display='none';
+  } else {
+    document.getElementById('share-not-saved').style.display='none';
+    document.getElementById('share-content').style.display='block';
+    document.getElementById('share-url').textContent = window.location.origin+'/editor.html?design='+currentDesignId;
+    if(window.supabase){
+      const {data} = await supabase.from('designs').select('is_public').eq('id',currentDesignId).single();
+      const pub = data?.is_public||false;
+      document.getElementById('public-toggle').checked = pub;
+      document.getElementById('public-label').textContent = pub ? 'Public — contractors can bid' : 'Private — only you can see this';
+    }
+  }
+  openModal('modal-share');
+}
+
+async function togglePublic(isPublic){
+  if(!currentDesignId||!window.supabase) return;
+  await supabase.from('designs').update({is_public:isPublic}).eq('id',currentDesignId);
+  document.getElementById('public-label').textContent = isPublic ? 'Public — contractors can bid' : 'Private — only you can see this';
+  toast(isPublic ? 'Design is now public!' : 'Design set to private');
 }
 
 function copyShareLink(){
   const url = document.getElementById('share-url').textContent;
   navigator.clipboard.writeText(url).then(()=>{
     const btn = document.getElementById('copy-btn');
-    btn.textContent = 'Copied!';
-    btn.style.background = 'var(--success)';
-    setTimeout(()=>{ btn.textContent = 'Copy Link'; btn.style.background = 'var(--gold)'; }, 2000);
+    btn.textContent='Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy'; btn.classList.remove('copied');},2000);
   });
 }
 
-/* ── GLTF Export ── */
 function downloadGLTF(){
-  if(!scene || !renderer){
-    toast('Open the editor first before exporting');
-    return;
-  }
-
-  // Build a simple GLTF structure from placed objects
-  const meshes = [];
-  placedObjects.forEach(obj => {
-    const p = obj.userData.product;
-    if(!p) return;
-    meshes.push({
-      name: p.name,
-      width: p.w,
-      height: p.h,
-      depth: p.d,
-      position: { x: +obj.position.x.toFixed(3), y: +obj.position.y.toFixed(3), z: +obj.position.z.toFixed(3) },
-      rotation: +obj.rotation.y.toFixed(3),
-      color: '#' + p.color.toString(16).padStart(6,'0')
-    });
-  });
-
-  // Minimal valid GLTF JSON with room and fixtures as nodes
+  const name = (document.getElementById('design-name').value||'myspa-design').replace(/\s+/g,'-').toLowerCase();
   const gltf = {
-    asset: { version: '2.0', generator: 'MySpa Design Studio' },
-    scene: 0,
-    scenes: [{ name: 'MySpa Design', nodes: meshes.map((_,i) => i) }],
-    nodes: meshes.map((m,i) => ({
-      name: m.name,
-      translation: [m.position.x, m.position.y, m.position.z],
-      rotation: [0, Math.sin(m.rotation/2), 0, Math.cos(m.rotation/2)],
-      mesh: i
-    })),
-    meshes: meshes.map(m => ({
-      name: m.name,
-      primitives: [{ attributes: { POSITION: 0 }, material: 0 }]
-    })),
-    materials: [{ name: 'default', pbrMetallicRoughness: { baseColorFactor: [0.9, 0.87, 0.82, 1] } }],
-    extensionsUsed: [],
-    extras: {
-      myspa: {
-        room: roomDims,
-        fixtures: meshes,
-        totalEstimate: cartItems.reduce((a,c)=>a+c.price,0),
-        exportedAt: new Date().toISOString()
-      }
-    }
+    asset:{version:'2.0',generator:'MySpa Design Studio'},
+    scene:0,
+    scenes:[{name:'MySpa Design',nodes:placedObjects.map((_,i)=>i)}],
+    nodes:placedObjects.map(o=>({name:o.userData.product.name,translation:[+o.position.x.toFixed(3),0,+o.position.z.toFixed(3)],rotation:[0,+Math.sin(o.rotation.y/2).toFixed(4),0,+Math.cos(o.rotation.y/2).toFixed(4)],mesh:0})),
+    meshes:[{name:'fixture',primitives:[{attributes:{POSITION:0}}]}],
+    materials:[{name:'default',pbrMetallicRoughness:{baseColorFactor:[0.9,0.87,0.82,1]}}],
+    extras:{myspa:{room:roomDims,fixtures:placedObjects.map(o=>({...o.userData.product,x:o.position.x,z:o.position.z,ry:o.rotation.y})),total:cartItems.reduce((a,c)=>a+c.price,0)}}
   };
-
-  const designName = document.getElementById('design-name')?.value.trim() || 'myspa-design';
-  const blob = new Blob([JSON.stringify(gltf, null, 2)], {type:'model/gltf+json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${designName.replace(/\s+/g,'-').toLowerCase()}.gltf`;
-  a.click();
-  toast('GLTF file downloaded!');
+  const blob = new Blob([JSON.stringify(gltf,null,2)],{type:'model/gltf+json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.gltf'; a.click();
+  toast('GLTF downloaded!');
 }
 
-function exportDesign(){
-  const blob = new Blob([JSON.stringify({
-    app:'MySpa', created:new Date().toISOString(),
-    room:roomDims, items:cartItems,
-    placements:placedObjects.map(o=>({
-      productId:o.userData.productId,
-      position:{x:+o.position.x.toFixed(2),z:+o.position.z.toFixed(2)},
-      rotationY:+o.rotation.y.toFixed(2)
-    })),
-    estimatedTotal:cartItems.reduce((a,c)=>a+c.price,0)
-  },null,2)],{type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'myspa-design.json';
-  a.click();
-  toast('Exported!');
+function downloadJSON(){
+  const name = (document.getElementById('design-name').value||'myspa-design').replace(/\s+/g,'-').toLowerCase();
+  const data = {app:'MySpa',version:'1.0',created:new Date().toISOString(),room:roomDims,fixtures:placedObjects.map(o=>({...o.userData.product,x:o.position.x,z:o.position.z,ry:o.rotation.y})),total:cartItems.reduce((a,c)=>a+c.price,0)};
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.json'; a.click();
+  toast('JSON downloaded!');
 }
 
-/* ═══════════════════════════════════════════════════
-   UI WIRING
-═══════════════════════════════════════════════════ */
-function switchTab(tab){
-  ['products','cart','designs'].forEach(t=>{
-    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
-    const p = document.getElementById(`${t}-panel`);
-    p.style.display = t===tab ? 'flex' : 'none';
-  });
-  if(tab==='cart') renderCart();
-  if(tab==='designs') renderDesigns();
-}
+/* ═══════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════ */
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
 function toast(msg){
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent=msg; el.classList.add('show');
   clearTimeout(el._t);
-  el._t = setTimeout(()=>el.classList.remove('show'), 2000);
+  el._t=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-function setMode(m){
-  mode = m;
-  ['btn-move','btn-rotate','btn-delete'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
-  if(m==='move') document.getElementById('btn-move').classList.add('active');
-  if(m==='delete') document.getElementById('btn-delete').classList.add('active');
-}
-
-document.getElementById('btn-move').onclick = ()=>setMode('move');
-document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); rotateSelected(); };
-document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
-document.getElementById('btn-reset').onclick = ()=>{ if(scene){ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); } };
-
-// Keyboard shortcuts
+/* ═══════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════ */
 document.addEventListener('keydown', e=>{
-  if(e.key === 'Delete' || e.key === 'Backspace'){
-    const active = document.activeElement;
-    if(active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
-    if(selectedObj) removeSelected();
-  }
-  if(e.key === 'r' || e.key === 'R'){
-    if(document.activeElement.tagName === 'INPUT') return;
-    rotateSelected();
-  }
-  if(e.key === 'Escape') selectObject(null);
+  const active = document.activeElement;
+  if(active.tagName==='INPUT'||active.tagName==='TEXTAREA') return;
+  if(e.key==='Delete'||e.key==='Backspace') removeSelected();
+  if(e.key==='r'||e.key==='R') rotateSelected();
+  if(e.key==='Escape') selectObject(null);
 });
 
-/* ═══════════════════════════════════════════════════
+/* ═══════════════════════════════════════
+   TOOLBAR BUTTONS
+═══════════════════════════════════════ */
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-move').classList.toggle('active',m==='move');
+  document.getElementById('btn-delete').classList.toggle('active',m==='delete');
+}
+document.getElementById('btn-move').onclick   = ()=>{ setMode('move'); toast('Move mode — drag fixtures to reposition'); };
+document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); rotateSelected(); };
+document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Remove mode — click any item to delete it'); };
+document.getElementById('btn-reset').onclick  = ()=>{ if(scene){ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); } };
+document.getElementById('btn-room').onclick   = ()=>openModal('modal-room');
+document.getElementById('btn-share').onclick  = ()=>openShare();
+
+/* ═══════════════════════════════════════
    SCAN FLOW
-═══════════════════════════════════════════════════ */
+═══════════════════════════════════════ */
 function launch(){
   document.getElementById('scan-overlay').style.display = 'none';
   initThree();
-  buildProductPanel();
+  renderCatalog();
+  renderCart();
   updateStats();
+  // Load design from URL if present
+  if(window.supabase){
+    const params = new URLSearchParams(window.location.search);
+    const designId = params.get('design');
+    if(designId) loadDesign(designId, '');
+  }
 }
 
 document.getElementById('btn-skip').onclick = launch;
+
 document.getElementById('btn-scan').onclick = ()=>{
   const btn = document.getElementById('btn-scan');
   const skip = document.getElementById('btn-skip');
-  const heading = document.getElementById('scan-heading');
-  const sub = document.getElementById('scan-sub');
   const prog = document.getElementById('scan-progress');
   const bar = document.getElementById('scan-bar');
-  btn.disabled = true; skip.disabled = true;
-  prog.style.display = 'block';
-  const steps = [
-    [300,'Detecting floor plane...',20],
-    [800,'Mapping wall surfaces...',45],
-    [1400,'Identifying fixtures...',68],
-    [2000,'Building 3D geometry...',88],
-    [2600,'Room captured.',100],
+  const msg = document.getElementById('scan-msg');
+  btn.disabled=true; skip.disabled=true;
+  prog.style.display='block';
+  const steps=[
+    [400,'Detecting floor plane...',20],
+    [900,'Mapping wall surfaces...',45],
+    [1500,'Identifying room geometry...',68],
+    [2100,'Building 3D model...',88],
+    [2700,'Room captured!',100],
   ];
-  steps.forEach(([delay,msg,pct])=>{
+  steps.forEach(([delay,text,pct])=>{
     setTimeout(()=>{
-      sub.textContent = msg;
-      bar.style.width = pct+'%';
+      msg.textContent=text;
+      bar.style.width=pct+'%';
       if(pct===100){
-        heading.textContent = 'Room Ready';
-        roomDims = {w:3.05, d:2.44, h:2.74};
-        document.getElementById('room-w').value = 10;
-        document.getElementById('room-d').value = 8;
-        document.getElementById('room-h').value = 9;
-        setTimeout(()=>{ btn.textContent='Open Editor'; btn.disabled=false; btn.onclick=launch; },400);
+        // Simulate a 10x8ft bathroom
+        document.getElementById('room-w').value=10;
+        document.getElementById('room-d').value=8;
+        document.getElementById('room-h').value=9;
+        roomDims={w:ft(10),d:ft(8),h:ft(9)};
+        setTimeout(()=>{
+          btn.textContent='Open Editor';
+          btn.disabled=false;
+          btn.onclick=launch;
+        },500);
       }
-    }, delay);
+    },delay);
   });
 };
 
-// Init — only build product panel, nothing that needs Three.js or Supabase
-buildProductPanel();
-renderCart();
-
-// Supabase init
+/* ═══════════════════════════════════════
+   SUPABASE / AUTH
+═══════════════════════════════════════ */
 import('https://esm.sh/@supabase/supabase-js@2').then(({createClient})=>{
   const SUPABASE_URL = 'https://nylbgdizzlpsaacrbsae.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pmUom2TfYAl2oa3OrFXpSw_JVL4LE4P';
@@ -1531,27 +1348,17 @@ import('https://esm.sh/@supabase/supabase-js@2').then(({createClient})=>{
   supabase.auth.getSession().then(({data:{session}})=>{
     if(session){
       currentUser = session.user;
-
-      // Update nav — show profile + sign out, hide sign in
-      document.getElementById('auth-nav-link').style.display = 'none';
-      document.getElementById('profile-nav-link').style.display = 'inline-block';
-      document.getElementById('signout-nav-btn').style.display = 'inline-block';
-
-      // Check for design ID in URL
-      const params = new URLSearchParams(window.location.search);
-      const designId = params.get('design');
-      if(designId) loadDesignById(designId);
-
-      // Refresh designs panel now that user is known
-      renderDesigns();
+      document.getElementById('nav-signin').style.display = 'none';
+      document.getElementById('nav-profile').style.display = 'inline-block';
+      document.getElementById('nav-signout').style.display = 'inline-block';
     }
   });
-
-  window.signOutUser = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/index.html';
-  };
 });
+
+window.signOutUser = async()=>{
+  await supabase.auth.signOut();
+  window.location.href='/index.html';
+};
 </script>
 </body>
 </html>
