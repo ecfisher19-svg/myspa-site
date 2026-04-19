@@ -351,7 +351,11 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <div id="ar-pill" onclick="document.getElementById('ar-modal').classList.add('show')">
         <span class="ar-dot"></span>AR Scan
       </div>
-      <a href="/auth.html" style="font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'" id="auth-nav-link">Sign In</a>
+      <div id="auth-nav-area" style="display:flex;align-items:center;gap:8px">
+        <a href="/auth.html" id="auth-nav-link" style="font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Sign In</a>
+        <a href="/profile.html" id="profile-nav-link" style="display:none;font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">My Profile</a>
+        <button id="signout-nav-btn" onclick="signOutUser()" style="display:none;font-size:11px;color:var(--text3);background:transparent;border:0.5px solid var(--border2);border-radius:20px;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Sign Out</button>
+      </div>
     </div>
 
     <div id="info-bar">
@@ -783,31 +787,40 @@ async function renderDesigns(){
 
   if(currentUser && window.supabase){
     const {data} = await supabase.from('designs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-    designs = (data||[]).map(d=>({...d, items:d.placements?.length||0, total:d.total_estimate||0, date:new Date(d.created_at).toLocaleDateString()}));
+    designs = (data||[]).map(d=>({...d, items:d.placements?.length||0, total:d.total_estimate||0, date:new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})}));
     savedDesigns = designs;
   } else {
     designs = savedDesigns;
   }
 
   panel.innerHTML = `
-    <div style="margin-bottom:10px">
-      <input class="design-input" id="design-name" type="text" placeholder="Name your design..."/>
-      <button class="action-btn primary" onclick="saveDesign()">Save Design</button>
-      <button class="action-btn secondary" onclick="exportDesign()">Export as JSON</button>
+    <div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">Save Current Design</div>
+      <input class="design-input" id="design-name" type="text" placeholder="Name your design e.g. Master Bath Spa" style="margin-bottom:8px"/>
+      <button class="action-btn primary" onclick="saveDesign()" style="width:100%;margin-bottom:6px">
+        💾 Save Design
+      </button>
+      <button class="action-btn secondary" onclick="exportDesign()" style="width:100%">Export as JSON</button>
       ${currentUser
-        ? `<a href="/profile.html" class="action-btn secondary" style="display:block;text-align:center;text-decoration:none;margin-top:6px">View All Designs on Profile →</a>`
-        : `<p style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6"><a href="/auth.html" style="color:var(--gold)">Sign in</a> to save designs to your account and access them from any device</p>`
+        ? `<a href="/profile.html" style="display:block;text-align:center;font-size:10px;color:var(--gold);text-decoration:none;margin-top:10px;letter-spacing:0.04em">View all designs on My Profile →</a>`
+        : `<p style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;text-align:center"><a href="/auth.html" style="color:var(--gold)">Sign in</a> to save designs to your account</p>`
       }
     </div>
-    ${designs.length ? `<div class="cat-label" style="margin-top:8px">Saved Designs (${designs.length})</div>` : ''}
-    ${designs.map((d,i)=>`
-      <div class="saved-card" onclick="loadDesign(${i})" style="position:relative">
-        <div class="saved-card-name">${d.name}</div>
-        <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
+    ${designs.length ? `
+      <div class="cat-label">Saved Designs (${designs.length})</div>
+      ${designs.map((d,i)=>`
+        <div class="saved-card" onclick="loadDesign(${i})">
+          <div class="saved-card-name">${d.name}</div>
+          <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
+        </div>
+      `).join('')}
+    ` : currentUser ? `
+      <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;line-height:1.8">
+        No saved designs yet.<br/>
+        Add fixtures and click Save Design above.
       </div>
-    `).join('')}
-    ${!designs.length && currentUser ? `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">No saved designs yet.<br/>Name your design above and click Save.</div>` : ''}
-    <div class="api-note" style="margin-top:12px">
+    ` : ''}
+    <div class="api-note" style="margin-top:8px">
       <strong>Live Pricing API</strong>
       Plug in your Home Depot & Lowe's partner keys into <code>fetchLivePrices()</code>.
     </div>
@@ -977,12 +990,26 @@ import('https://esm.sh/@supabase/supabase-js@2').then(({createClient})=>{
   supabase.auth.getSession().then(({data:{session}})=>{
     if(session){
       currentUser = session.user;
+
+      // Update nav — show profile + sign out, hide sign in
+      document.getElementById('auth-nav-link').style.display = 'none';
+      document.getElementById('profile-nav-link').style.display = 'inline-block';
+      document.getElementById('signout-nav-btn').style.display = 'inline-block';
+
       // Check for design ID in URL
       const params = new URLSearchParams(window.location.search);
       const designId = params.get('design');
       if(designId) loadDesignById(designId);
+
+      // Refresh designs panel now that user is known
+      renderDesigns();
     }
   });
+
+  window.signOutUser = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/index.html';
+  };
 });
 </script>
 </body>
