@@ -353,6 +353,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <button class="tool-btn" id="btn-rotate">Rotate 45°</button>
         <button class="tool-btn" id="btn-delete">Remove</button>
         <button class="tool-btn" id="btn-reset">Reset View</button>
+        <button class="tool-btn" onclick="document.getElementById('room-dims-modal').style.display='flex'">Room Size</button>
         <button class="tool-btn" id="btn-share" onclick="shareDesign()" style="border-color:var(--gold-mid);color:var(--gold)">Share Design</button>
       </div>
       <div id="ar-pill" onclick="document.getElementById('ar-modal').classList.add('show')">
@@ -485,35 +486,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <div class="stat"><div class="stat-val" id="stat-total">$0</div><div class="stat-label">Est. Total</div></div>
     </div>
 
-    <!-- Room dimensions -->
-    <div style="padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)">
-      <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
-        <span>Room Dimensions</span>
-        <span style="color:var(--text3);font-size:9px">(feet)</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Width</div>
-          <input id="room-w" type="number" value="26" min="6" max="100" step="1"
-            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
-            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
-        </div>
-        <div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Length</div>
-          <input id="room-d" type="number" value="26" min="6" max="100" step="1"
-            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
-            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
-        </div>
-        <div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Height</div>
-          <input id="room-h" type="number" value="9" min="6" max="20" step="1"
-            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
-            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Selected item actions -->
+    <!-- Selected item actions — only shows when item is selected -->
     <div id="selected-actions" style="display:none;padding:8px 12px;background:#e0555511;border-bottom:0.5px solid #e0555533;align-items:center;justify-content:space-between">
       <span id="selected-label" style="font-size:11px;color:var(--text2)">Item selected</span>
       <div style="display:flex;gap:6px">
@@ -535,6 +508,32 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     <div id="products-panel"></div>
     <div id="cart-panel"></div>
     <div id="designs-panel"></div>
+  </div>
+</div>
+
+<!-- Room Dimensions Modal -->
+<div id="room-dims-modal" style="display:none;position:fixed;inset:0;background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:50">
+  <div style="background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:28px;max-width:360px;width:90%">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);margin-bottom:6px">Room Dimensions</h2>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6">Enter your room size in feet. These will auto-populate when you scan with the iOS app.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Width (ft)</div>
+        <input id="room-w" type="number" value="26" min="4" max="100" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Length (ft)</div>
+        <input id="room-d" type="number" value="26" min="4" max="100" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Height (ft)</div>
+        <input id="room-h" type="number" value="9" min="6" max="20" step="1" style="width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;text-align:center;outline:none" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="applyRoomDims()" style="flex:1;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:12px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer">Apply</button>
+      <button onclick="document.getElementById('room-dims-modal').style.display='none'" style="background:transparent;color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:12px 20px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -891,13 +890,24 @@ function makeMesh(prod){
   return group;
 }
 
-function updateRoomDims(){
+function applyRoomDims(){
   const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
   const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
   const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
   roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
   document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
-  // Only rebuild room if Three.js scene exists
+  if(scene) buildRoom(roomDims);
+  document.getElementById('room-dims-modal').style.display = 'none';
+  toast(`Room updated: ${wFt}×${dFt}ft`);
+}
+
+function updateRoomDims(){
+  // Called from scan overlay — sets defaults without needing modal
+  const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
+  const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
+  const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
+  roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
+  document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
   if(scene) buildRoom(roomDims);
 }
 
@@ -1471,7 +1481,6 @@ document.addEventListener('keydown', e=>{
 function launch(){
   document.getElementById('scan-overlay').style.display = 'none';
   initThree();
-  updateRoomDims(); // Use whatever is in the dimension inputs
   buildProductPanel();
   updateStats();
 }
