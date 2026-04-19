@@ -164,6 +164,33 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 40px
   </div>
 </div>
 
+<!-- Share Modal -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:100;flex-direction:column">
+  <div style="background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:28px;max-width:400px;width:90%">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold);margin-bottom:8px">Share Design</h2>
+    <p style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px">Share this link with your contractor, spouse, or interior designer — they can view the full 3D layout.</p>
+
+    <div style="background:var(--surface2);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      <span id="share-url-text" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all"></span>
+      <button onclick="copyLink()" id="copy-btn" style="background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap">Copy</button>
+    </div>
+
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:16px">
+      <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Make public for contractor bids</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--text2)" id="public-status-label">Private</span>
+        <label style="position:relative;width:32px;height:18px;display:inline-block;cursor:pointer">
+          <input type="checkbox" id="modal-public-toggle" onchange="updatePublic(this.checked)" style="opacity:0;width:0;height:0"/>
+          <span id="modal-slider" style="position:absolute;inset:0;background:var(--border2);border-radius:9px;transition:background 0.2s"></span>
+          <span id="modal-knob" style="position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.2s"></span>
+        </label>
+      </div>
+    </div>
+
+    <button onclick="closeShareModal()" style="width:100%;background:var(--gold);color:var(--bg);border:none;border-radius:8px;padding:11px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer">Done</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -228,6 +255,7 @@ async function loadDesigns() {
       </div>
       <div class="design-actions">
         <a class="design-btn" href="/editor.html?design=${d.id}">Edit in 3D</a>
+        <button class="design-btn" onclick="shareDesign('${d.id}', '${d.name || 'My Design'}')">Share</button>
         <button class="design-btn danger" onclick="deleteDesign('${d.id}')">Delete</button>
       </div>
     </div>
@@ -329,6 +357,53 @@ window.switchTab = (tab) => {
 };
 
 /* ── Sign out ── */
+let currentShareId = null;
+
+window.shareDesign = async (id, name) => {
+  currentShareId = id;
+  const modal = document.getElementById('share-modal');
+  modal.style.display = 'flex';
+  const url = `${window.location.origin}/editor.html?design=${id}`;
+  document.getElementById('share-url-text').textContent = url;
+
+  const {data} = await supabase.from('designs').select('is_public').eq('id', id).single();
+  const isPublic = data?.is_public || false;
+  const toggle = document.getElementById('modal-public-toggle');
+  const slider = document.getElementById('modal-slider');
+  const knob = document.getElementById('modal-knob');
+  toggle.checked = isPublic;
+  slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
+  knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
+  document.getElementById('public-status-label').textContent = isPublic ? 'Public — contractors can bid' : 'Private';
+};
+
+window.updatePublic = async (isPublic) => {
+  if(!currentShareId) return;
+  await supabase.from('designs').update({is_public: isPublic}).eq('id', currentShareId);
+  const slider = document.getElementById('modal-slider');
+  const knob = document.getElementById('modal-knob');
+  slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
+  knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
+  document.getElementById('public-status-label').textContent = isPublic ? 'Public — contractors can bid' : 'Private';
+  toast(isPublic ? 'Design is now public!' : 'Design set to private');
+  await loadDesigns();
+};
+
+window.copyLink = () => {
+  const url = document.getElementById('share-url-text').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.style.background = '#5db888';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = 'var(--gold)'; }, 2000);
+  });
+};
+
+window.closeShareModal = () => {
+  document.getElementById('share-modal').style.display = 'none';
+  currentShareId = null;
+};
+
 window.signOut = async () => {
   await supabase.auth.signOut();
   window.location.href = '/index.html';
