@@ -404,6 +404,15 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <a class="back-home" href="/index.html" style="margin-top:8px"><span class="back-home-arrow">←</span> Back to home</a>
     </div>
 
+    <!-- Save design — always visible at top -->
+    <div style="padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="search-input" id="design-name" type="text" placeholder="Name your design..." style="flex:1;font-size:12px"/>
+        <button onclick="saveDesign()" style="background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:7px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">Save</button>
+      </div>
+      <div id="save-status" style="font-size:10px;color:var(--text3);margin-top:5px;letter-spacing:0.04em;min-height:14px"></div>
+    </div>
+
     <div class="room-stats">
       <div class="stat"><div class="stat-val" id="stat-items">0</div><div class="stat-label">Items</div></div>
       <div class="stat"><div class="stat-val" id="stat-sqft">—</div><div class="stat-label">Sq Ft</div></div>
@@ -413,7 +422,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     <div class="tabs">
       <div class="tab active" id="tab-products" onclick="switchTab('products')">Catalog</div>
       <div class="tab" id="tab-cart" onclick="switchTab('cart')">Cart <span id="cart-badge"></span></div>
-      <div class="tab" id="tab-designs" onclick="switchTab('designs')">Designs</div>
+      <div class="tab" id="tab-designs" onclick="switchTab('designs')">My Designs</div>
     </div>
 
     <div class="search-wrap">
@@ -787,63 +796,72 @@ async function renderDesigns(){
 
   if(currentUser && window.supabase){
     const {data} = await supabase.from('designs').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-    designs = (data||[]).map(d=>({...d, items:d.placements?.length||0, total:d.total_estimate||0, date:new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})}));
+    designs = (data||[]).map(d=>({
+      ...d,
+      items: d.placements?.length||0,
+      total: d.total_estimate||0,
+      date: new Date(d.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    }));
     savedDesigns = designs;
   } else {
     designs = savedDesigns;
   }
 
-  panel.innerHTML = `
-    <div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">Save Current Design</div>
-      <input class="design-input" id="design-name" type="text" placeholder="Name your design e.g. Master Bath Spa" style="margin-bottom:8px"/>
-      <button class="action-btn primary" onclick="saveDesign()" style="width:100%;margin-bottom:6px">
-        💾 Save Design
-      </button>
-      <button class="action-btn secondary" onclick="exportDesign()" style="width:100%">Export as JSON</button>
-      ${currentUser
-        ? `<a href="/profile.html" style="display:block;text-align:center;font-size:10px;color:var(--gold);text-decoration:none;margin-top:10px;letter-spacing:0.04em">View all designs on My Profile →</a>`
-        : `<p style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;text-align:center"><a href="/auth.html" style="color:var(--gold)">Sign in</a> to save designs to your account</p>`
-      }
-    </div>
-    ${designs.length ? `
-      <div class="cat-label">Saved Designs (${designs.length})</div>
-      ${designs.map((d,i)=>`
-        <div class="saved-card" onclick="loadDesign(${i})">
-          <div class="saved-card-name">${d.name}</div>
-          <div class="saved-card-meta">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
+  if(!designs.length){
+    panel.innerHTML = currentUser
+      ? `<div style="text-align:center;padding:28px 16px;color:var(--text3);font-size:12px;line-height:1.8">
+           No saved designs yet.<br/>Add fixtures above and click <strong style="color:var(--text2)">Save</strong> to save your first design.
+         </div>`
+      : `<div style="text-align:center;padding:28px 16px;color:var(--text3);font-size:12px;line-height:1.8">
+           <a href="/auth.html" style="color:var(--gold)">Sign in</a> to save and reload your designs from any device.
+         </div>`;
+    return;
+  }
+
+  panel.innerHTML = designs.map((d,i)=>`
+    <div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text)">${d.name}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${d.items} items · $${d.total.toLocaleString()} · ${d.date}</div>
         </div>
-      `).join('')}
-    ` : currentUser ? `
-      <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;line-height:1.8">
-        No saved designs yet.<br/>
-        Add fixtures and click Save Design above.
+        ${d.id === currentDesignId ? `<div style="font-size:9px;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;background:var(--gold-dim);padding:2px 8px;border-radius:10px;border:0.5px solid var(--gold-mid)">Editing</div>` : ''}
       </div>
-    ` : ''}
-    <div class="api-note" style="margin-top:8px">
-      <strong>Live Pricing API</strong>
-      Plug in your Home Depot & Lowe's partner keys into <code>fetchLivePrices()</code>.
+      <div style="display:flex;gap:6px">
+        <button onclick="loadDesign(${i})" style="flex:1;background:var(--gold-dim);color:var(--gold);border:0.5px solid var(--gold-mid);border-radius:6px;padding:6px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.2s" onmouseover="this.style.background='var(--gold)';this.style.color='var(--bg)'" onmouseout="this.style.background='var(--gold-dim)';this.style.color='var(--gold)'">
+          ${d.id === currentDesignId ? '↺ Reload' : '✏ Open & Edit'}
+        </button>
+        <button onclick="deleteDesign('${d.id||''}',${i})" style="background:transparent;color:var(--text3);border:0.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">✕</button>
+      </div>
     </div>
+  `).join('') + `
+    <a href="/profile.html" style="display:block;text-align:center;font-size:10px;color:var(--text3);text-decoration:none;padding:8px;letter-spacing:0.04em;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text3)'">Manage all designs on My Profile →</a>
   `;
 }
 
 async function saveDesign(){
-  const name = document.getElementById('design-name')?.value.trim() || 'My Design';
+  const nameEl = document.getElementById('design-name');
+  const statusEl = document.getElementById('save-status');
+  const name = nameEl?.value.trim() || 'My Design';
   const placements = placedObjects.map(o=>({id:o.userData.productId, x:+o.position.x.toFixed(2), z:+o.position.z.toFixed(2), ry:+o.rotation.y.toFixed(2)}));
   const total_estimate = cartItems.reduce((a,c)=>a+c.price,0);
 
-  if(currentUser){
+  if(currentUser && window.supabase){
     if(currentDesignId){
       await supabase.from('designs').update({name, placements, total_estimate, room_scan:roomDims}).eq('id', currentDesignId);
     } else {
       const {data} = await supabase.from('designs').insert({user_id:currentUser.id, name, placements, total_estimate, room_scan:roomDims}).select().single();
       if(data) currentDesignId = data.id;
     }
+    const now = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    if(statusEl) statusEl.textContent = `✓ Saved at ${now}`;
+    setTimeout(()=>{ if(statusEl) statusEl.textContent = ''; }, 4000);
   } else {
     // Fallback to localStorage if not logged in
     const design = {name, date:new Date().toLocaleDateString(), items:cartItems.length, total:total_estimate, placements};
     savedDesigns.unshift(design);
     try{ localStorage.setItem('myspa_designs', JSON.stringify(savedDesigns)); }catch(e){}
+    if(statusEl) statusEl.textContent = 'Sign in to save to your account';
   }
   await renderDesigns();
   toast('Design saved!');
@@ -853,7 +871,10 @@ async function loadDesignById(id){
   const {data:d} = await supabase.from('designs').select('*').eq('id',id).single();
   if(!d) return;
   currentDesignId = d.id;
-  document.getElementById('design-name').value = d.name || '';
+  const nameEl = document.getElementById('design-name');
+  if(nameEl) nameEl.value = d.name || '';
+  const statusEl = document.getElementById('save-status');
+  if(statusEl) statusEl.textContent = `Editing: ${d.name}`;
   placedObjects.forEach(o=>scene.remove(o));
   placedObjects = []; cartItems = [];
   (d.placements||[]).forEach(pl=>{
@@ -866,13 +887,17 @@ async function loadDesignById(id){
     placedObjects.push(mesh);
     if(!cartItems.find(c=>c.id===prod.id)) cartItems.push({...prod});
   });
-  updateStats(); renderCart(); toast(`Loaded: ${d.name}`);
+  updateStats(); renderCart(); renderDesigns();
+  toast(`Loaded: ${d.name} — make changes and click Save`);
 }
 
 function loadDesign(i){
   const d = savedDesigns[i];
   if(!d) return;
   if(d.id){ loadDesignById(d.id); return; }
+  currentDesignId = null;
+  const nameEl = document.getElementById('design-name');
+  if(nameEl) nameEl.value = d.name || '';
   placedObjects.forEach(o=>scene.remove(o));
   placedObjects = []; cartItems = [];
   (d.placements||[]).forEach(pl=>{
@@ -885,7 +910,27 @@ function loadDesign(i){
     placedObjects.push(mesh);
     if(!cartItems.find(c=>c.id===prod.id)) cartItems.push({...prod});
   });
-  updateStats(); renderCart(); toast(`Loaded: ${d.name}`);
+  updateStats(); renderCart(); renderDesigns();
+  toast(`Loaded: ${d.name} — make changes and click Save`);
+}
+
+async function deleteDesign(id, index){
+  if(!confirm('Delete this design? This cannot be undone.')) return;
+  if(id && window.supabase){
+    await supabase.from('designs').delete().eq('id', id);
+    if(currentDesignId === id){
+      currentDesignId = null;
+      const nameEl = document.getElementById('design-name');
+      if(nameEl) nameEl.value = '';
+      const statusEl = document.getElementById('save-status');
+      if(statusEl) statusEl.textContent = '';
+    }
+  } else {
+    savedDesigns.splice(index, 1);
+    try{ localStorage.setItem('myspa_designs', JSON.stringify(savedDesigns)); }catch(e){}
+  }
+  await renderDesigns();
+  toast('Design deleted');
 }
 
 function exportDesign(){
