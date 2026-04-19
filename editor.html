@@ -309,6 +309,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   align-items:center;justify-content:center;z-index:25;flex-direction:column;
 }
 #ar-modal.show{display:flex}
+#share-modal{
+  display:none;position:absolute;inset:0;
+  background:rgba(8,8,7,0.88);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;z-index:25;flex-direction:column;
+}
+#share-modal.show{display:flex}
 .modal-card{
   background:var(--surface);border:0.5px solid var(--border2);
   border-radius:16px;padding:28px;max-width:360px;
@@ -347,6 +353,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <button class="tool-btn" id="btn-rotate">Rotate 45°</button>
         <button class="tool-btn" id="btn-delete">Remove</button>
         <button class="tool-btn" id="btn-reset">Reset View</button>
+        <button class="tool-btn" id="btn-share" onclick="shareDesign()" style="border-color:var(--gold-mid);color:var(--gold)">Share Design</button>
       </div>
       <div id="ar-pill" onclick="document.getElementById('ar-modal').classList.add('show')">
         <span class="ar-dot"></span>AR Scan
@@ -373,6 +380,51 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <p>The full scanning pipeline outputs a dimensionally accurate <code>CapturedRoom</code> object which bridges directly into this 3D editor. Accuracy: ±1–2cm.</p>
         <p style="color:var(--text3);font-size:11px">Coming in the iOS release of MySpa. For now, use the simulated scan or enter your room dimensions manually.</p>
         <button class="modal-close" onclick="document.getElementById('ar-modal').classList.remove('show')">Got it</button>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal">
+      <div class="modal-card" style="max-width:420px;width:90%">
+        <h2>Share Your Design</h2>
+        <p>Anyone with this link can view your design in 3D — perfect for sharing with your contractor, spouse, or interior designer.</p>
+
+        <div id="share-not-saved" style="display:none">
+          <p style="color:var(--gold);font-size:12px">Save your design first before sharing!</p>
+          <button class="modal-close" onclick="document.getElementById('share-modal').classList.remove('show');saveDesign()">Save & Share</button>
+        </div>
+
+        <div id="share-content" style="display:none">
+          <div style="background:var(--surface3);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+            <span id="share-url" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all;font-family:'DM Sans',sans-serif"></span>
+            <button onclick="copyShareLink()" style="background:var(--gold);color:var(--bg);border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'" id="copy-btn">Copy Link</button>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button onclick="downloadGLTF()" style="flex:1;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+              Download .GLB File
+            </button>
+            <button onclick="exportDesign()" style="flex:1;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:8px;padding:10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em;text-transform:uppercase" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+              Download .JSON File
+            </button>
+          </div>
+
+          <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:12px">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">Make design public</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:12px;color:var(--text2)" id="public-label">Private — only you can see this</span>
+              <label style="position:relative;width:32px;height:18px;display:inline-block;cursor:pointer">
+                <input type="checkbox" id="public-toggle" onchange="togglePublicFromEditor(this.checked)" style="opacity:0;width:0;height:0"/>
+                <span id="public-slider" style="position:absolute;inset:0;background:var(--border2);border-radius:9px;transition:background 0.2s"></span>
+                <span id="public-knob" style="position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:transform 0.2s"></span>
+              </label>
+            </div>
+          </div>
+
+          <p style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:12px">Making a design public lets contractors find and bid on it from the contractor portal.</p>
+        </div>
+
+        <button class="modal-close" onclick="document.getElementById('share-modal').classList.remove('show')">Close</button>
       </div>
     </div>
 
@@ -931,6 +983,119 @@ async function deleteDesign(id, index){
   }
   await renderDesigns();
   toast('Design deleted');
+}
+
+/* ── Share Design ── */
+async function shareDesign(){
+  const modal = document.getElementById('share-modal');
+  modal.classList.add('show');
+
+  if(!currentDesignId){
+    document.getElementById('share-not-saved').style.display = 'block';
+    document.getElementById('share-content').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('share-not-saved').style.display = 'none';
+  document.getElementById('share-content').style.display = 'block';
+
+  const shareUrl = `${window.location.origin}/editor.html?design=${currentDesignId}`;
+  document.getElementById('share-url').textContent = shareUrl;
+
+  // Check current public status
+  if(window.supabase && currentDesignId){
+    const {data} = await supabase.from('designs').select('is_public').eq('id', currentDesignId).single();
+    const isPublic = data?.is_public || false;
+    const toggle = document.getElementById('public-toggle');
+    const slider = document.getElementById('public-slider');
+    const knob = document.getElementById('public-knob');
+    const label = document.getElementById('public-label');
+    toggle.checked = isPublic;
+    slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
+    knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
+    label.textContent = isPublic ? 'Public — contractors can bid on this' : 'Private — only you can see this';
+  }
+}
+
+async function togglePublicFromEditor(isPublic){
+  if(!currentDesignId || !window.supabase) return;
+  await supabase.from('designs').update({is_public: isPublic}).eq('id', currentDesignId);
+  const slider = document.getElementById('public-slider');
+  const knob = document.getElementById('public-knob');
+  const label = document.getElementById('public-label');
+  slider.style.background = isPublic ? 'var(--gold)' : 'var(--border2)';
+  knob.style.transform = isPublic ? 'translateX(14px)' : 'translateX(0)';
+  label.textContent = isPublic ? 'Public — contractors can bid on this' : 'Private — only you can see this';
+  toast(isPublic ? 'Design is now public — contractors can bid!' : 'Design set to private');
+}
+
+function copyShareLink(){
+  const url = document.getElementById('share-url').textContent;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--success)';
+    setTimeout(()=>{ btn.textContent = 'Copy Link'; btn.style.background = 'var(--gold)'; }, 2000);
+  });
+}
+
+/* ── GLTF Export ── */
+function downloadGLTF(){
+  if(!scene || !renderer){
+    toast('Open the editor first before exporting');
+    return;
+  }
+
+  // Build a simple GLTF structure from placed objects
+  const meshes = [];
+  placedObjects.forEach(obj => {
+    const p = obj.userData.product;
+    if(!p) return;
+    meshes.push({
+      name: p.name,
+      width: p.w,
+      height: p.h,
+      depth: p.d,
+      position: { x: +obj.position.x.toFixed(3), y: +obj.position.y.toFixed(3), z: +obj.position.z.toFixed(3) },
+      rotation: +obj.rotation.y.toFixed(3),
+      color: '#' + p.color.toString(16).padStart(6,'0')
+    });
+  });
+
+  // Minimal valid GLTF JSON with room and fixtures as nodes
+  const gltf = {
+    asset: { version: '2.0', generator: 'MySpa Design Studio' },
+    scene: 0,
+    scenes: [{ name: 'MySpa Design', nodes: meshes.map((_,i) => i) }],
+    nodes: meshes.map((m,i) => ({
+      name: m.name,
+      translation: [m.position.x, m.position.y, m.position.z],
+      rotation: [0, Math.sin(m.rotation/2), 0, Math.cos(m.rotation/2)],
+      mesh: i
+    })),
+    meshes: meshes.map(m => ({
+      name: m.name,
+      primitives: [{ attributes: { POSITION: 0 }, material: 0 }]
+    })),
+    materials: [{ name: 'default', pbrMetallicRoughness: { baseColorFactor: [0.9, 0.87, 0.82, 1] } }],
+    extensionsUsed: [],
+    extras: {
+      myspa: {
+        room: roomDims,
+        fixtures: meshes,
+        totalEstimate: cartItems.reduce((a,c)=>a+c.price,0),
+        exportedAt: new Date().toISOString()
+      }
+    }
+  };
+
+  const designName = document.getElementById('design-name')?.value.trim() || 'myspa-design';
+  const blob = new Blob([JSON.stringify(gltf, null, 2)], {type:'model/gltf+json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${designName.replace(/\s+/g,'-').toLowerCase()}.gltf`;
+  a.click();
+  toast('GLTF file downloaded!');
 }
 
 function exportDesign(){
