@@ -895,10 +895,10 @@ function updateRoomDims(){
   const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
   const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
   const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
-  // Convert feet to meters
   roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
-  buildRoom(roomDims);
   document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
+  // Only rebuild room if Three.js scene exists
+  if(scene) buildRoom(roomDims);
 }
 
 function removeSelected(){
