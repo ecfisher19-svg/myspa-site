@@ -366,7 +366,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
 
     <div id="info-bar">
-      <span>Orbit: drag · Zoom: scroll · Double-click: rotate · Drag to edge: remove</span>
+      <span>Drag to move · Scroll to zoom · Click to select · Delete key or ✕ to remove</span>
       <span id="selected-info">Nothing selected</span>
     </div>
 
@@ -477,10 +477,49 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <div id="save-status" style="font-size:10px;color:var(--text3);margin-top:5px;letter-spacing:0.04em;min-height:14px"></div>
     </div>
 
+    </div>
+
     <div class="room-stats">
       <div class="stat"><div class="stat-val" id="stat-items">0</div><div class="stat-label">Items</div></div>
       <div class="stat"><div class="stat-val" id="stat-sqft">—</div><div class="stat-label">Sq Ft</div></div>
       <div class="stat"><div class="stat-val" id="stat-total">$0</div><div class="stat-label">Est. Total</div></div>
+    </div>
+
+    <!-- Room dimensions -->
+    <div style="padding:10px 12px;border-bottom:0.5px solid var(--border);background:var(--surface2)">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+        <span>Room Dimensions</span>
+        <span style="color:var(--text3);font-size:9px">(feet)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Width</div>
+          <input id="room-w" type="number" value="26" min="6" max="100" step="1"
+            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
+            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Length</div>
+          <input id="room-d" type="number" value="26" min="6" max="100" step="1"
+            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
+            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:3px;text-align:center">Height</div>
+          <input id="room-h" type="number" value="9" min="6" max="20" step="1"
+            style="width:100%;background:var(--surface3);border:0.5px solid var(--border);border-radius:6px;padding:5px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;text-align:center;outline:none"
+            oninput="updateRoomDims()" onfocus="this.style.borderColor='var(--gold-mid)'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected item actions -->
+    <div id="selected-actions" style="display:none;padding:8px 12px;background:#e0555511;border-bottom:0.5px solid #e0555533;align-items:center;justify-content:space-between">
+      <span id="selected-label" style="font-size:11px;color:var(--text2)">Item selected</span>
+      <div style="display:flex;gap:6px">
+        <button onclick="rotateSelected()" style="background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;transition:all 0.2s" onmouseover="this.style.borderColor='var(--gold-mid)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">↻ Rotate</button>
+        <button onclick="removeSelected()" style="background:#e0555522;color:var(--danger);border:0.5px solid #e0555544;border-radius:6px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.04em;font-weight:500;transition:all 0.2s" onmouseover="this.style.background='#e0555544'" onmouseout="this.style.background='#e0555522'">✕ Remove</button>
+      </div>
     </div>
 
     <div class="tabs">
@@ -852,10 +891,36 @@ function makeMesh(prod){
   return group;
 }
 
+function updateRoomDims(){
+  const wFt = parseFloat(document.getElementById('room-w')?.value) || 26;
+  const dFt = parseFloat(document.getElementById('room-d')?.value) || 26;
+  const hFt = parseFloat(document.getElementById('room-h')?.value) || 9;
+  // Convert feet to meters
+  roomDims = {w: wFt*0.3048, d: dFt*0.3048, h: hFt*0.3048};
+  buildRoom(roomDims);
+  document.getElementById('stat-sqft').textContent = Math.round(wFt * dFt);
+}
+
+function removeSelected(){
+  if(!selectedObj) return;
+  const id = selectedObj.userData.productId;
+  scene.remove(selectedObj);
+  placedObjects = placedObjects.filter(o=>o!==selectedObj);
+  cartItems = cartItems.filter(c=>c.id!==id);
+  selectObject(null);
+  updateStats(); renderCart(); renderDesigns();
+  toast('Item removed');
+}
+
+function rotateSelected(){
+  if(!selectedObj) return;
+  selectedObj.rotation.y += Math.PI/4;
+  toast('Rotated 45°');
+}
+
 function selectObject(obj){
   // Get the root group
   const root = obj?.userData?.productId ? obj : obj?.parent;
-  if(!root) return;
 
   if(selectedObj){
     selectedObj.traverse(child=>{
@@ -865,18 +930,26 @@ function selectObject(obj){
       }
     });
   }
-  selectedObj = root;
-  if(root){
-    root.traverse(child=>{
+
+  selectedObj = root || null;
+  const actionsBar = document.getElementById('selected-actions');
+  const selectedLabel = document.getElementById('selected-label');
+
+  if(selectedObj && selectedObj.userData?.productId){
+    selectedObj.traverse(child=>{
       if(child.isMesh && child.material && child.material.opacity !== 0.25){
         child.material.emissive = new THREE.Color(0xc9a96e);
         child.material.emissiveIntensity = 0.18;
       }
     });
-    const p = root.userData.product;
+    const p = selectedObj.userData.product;
     document.getElementById('selected-info').textContent = `${p.name} · $${p.price.toLocaleString()}`;
+    if(actionsBar) actionsBar.style.display = 'flex';
+    if(selectedLabel) selectedLabel.textContent = p.name;
   } else {
+    selectedObj = null;
     document.getElementById('selected-info').textContent = 'Nothing selected';
+    if(actionsBar) actionsBar.style.display = 'none';
   }
 }
 
@@ -1374,7 +1447,24 @@ function setMode(m){
 }
 
 document.getElementById('btn-move').onclick = ()=>setMode('move');
-document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); if(selectedObj){ selectedObj.rotation.y+=Math.PI/4; toast('Rotated 45°'); }};
+document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); rotateSelected(); };
+document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
+document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); };
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Delete' || e.key === 'Backspace'){
+    const active = document.activeElement;
+    // Don't trigger if user is typing in an input
+    if(active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
+    if(selectedObj) removeSelected();
+  }
+  if(e.key === 'r' || e.key === 'R'){
+    if(document.activeElement.tagName === 'INPUT') return;
+    rotateSelected();
+  }
+  if(e.key === 'Escape') selectObject(null);
+});
 document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
 document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); };
 
@@ -1383,7 +1473,10 @@ document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0
 ═══════════════════════════════════════════════════ */
 function launch(){
   document.getElementById('scan-overlay').style.display = 'none';
-  initThree(); buildProductPanel(); updateStats();
+  initThree();
+  updateRoomDims(); // Use whatever is in the dimension inputs
+  buildProductPanel();
+  updateStats();
 }
 
 document.getElementById('btn-skip').onclick = launch;
@@ -1410,6 +1503,9 @@ document.getElementById('btn-scan').onclick = ()=>{
       if(pct===100){
         heading.textContent = 'Room Ready';
         roomDims = {w:3.05, d:2.44, h:2.74};
+        document.getElementById('room-w').value = 10;
+        document.getElementById('room-d').value = 8;
+        document.getElementById('room-h').value = 9;
         setTimeout(()=>{ btn.textContent='Open Editor'; btn.disabled=false; btn.onclick=launch; },400);
       }
     }, delay);

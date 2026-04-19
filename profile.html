@@ -133,6 +133,16 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 40px
             <label class="form-label">Email</label>
             <input class="form-input" id="edit-email" placeholder="your@email.com"/>
           </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input class="form-input" id="edit-city" placeholder="Austin"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <input class="form-input" id="edit-state" placeholder="TX" maxlength="2" style="text-transform:uppercase"/>
+            </div>
+          </div>
           <div style="display:flex;gap:10px;margin-top:16px">
             <button class="save-btn" onclick="saveProfile()">Save</button>
             <button class="danger-btn" onclick="changePassword()">Change Password</button>
@@ -224,9 +234,11 @@ async function loadProfile() {
 
   document.getElementById('avatar').textContent = initials;
   document.getElementById('profile-name').textContent = name;
-  document.getElementById('profile-email').textContent = email;
+  document.getElementById('profile-email').textContent = `${email}${data?.city ? ` · ${data.city}, ${data.state||''}` : ''}`;
   document.getElementById('edit-name').value = name;
   document.getElementById('edit-email').value = email;
+  document.getElementById('edit-city').value = data?.city || '';
+  document.getElementById('edit-state').value = data?.state || '';
 }
 
 /* ── Load designs ── */
@@ -331,9 +343,14 @@ window.respondToBid = async (bidId, status) => {
 window.saveProfile = async () => {
   const full_name = document.getElementById('edit-name').value.trim();
   const email = document.getElementById('edit-email').value.trim();
-  await supabase.from('users').update({ full_name, email }).eq('id', currentUser.id);
+  const city = document.getElementById('edit-city').value.trim();
+  const state = document.getElementById('edit-state').value.trim().toUpperCase();
+
+  await supabase.from('users').update({ full_name, email, city, state }).eq('id', currentUser.id);
   await supabase.auth.updateUser({ data: { full_name } });
+
   document.getElementById('profile-name').textContent = full_name;
+  document.getElementById('profile-email').textContent = `${email}${city ? ` · ${city}, ${state}` : ''}`;
   const initials = full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('avatar').textContent = initials;
   toast('Profile saved!');
