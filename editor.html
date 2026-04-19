@@ -715,25 +715,26 @@ function buildRoom({w,d,h}){
   const toRemove = scene.children.filter(c=>c.userData.isRoom);
   toRemove.forEach(o=>scene.remove(o));
 
-  const wallMat = new THREE.MeshLambertMaterial({color:0x141311, side:THREE.BackSide});
-  const floorMat = new THREE.MeshLambertMaterial({color:0x1a1816});
-
-  // Floor
+  // Solid floor — no spotting
+  const floorMat = new THREE.MeshLambertMaterial({color:0x16140f});
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(w,d), floorMat);
   floor.rotation.x = -Math.PI/2;
   floor.receiveShadow = true;
   floor.userData.isRoom = true;
   scene.add(floor);
 
-  // Room box (inside faces)
+  // Room walls (inside faces)
+  const wallMat = new THREE.MeshLambertMaterial({color:0x111008, side:THREE.BackSide});
   const room = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), wallMat);
   room.position.y = h/2;
   room.userData.isRoom = true;
   scene.add(room);
 
-  // Grid
-  const grid = new THREE.GridHelper(Math.max(w,d)*1.5, Math.round(Math.max(w,d)*2), 0x2a2622, 0x1e1c18);
-  grid.position.y = 0.001;
+  // Very subtle grid — thin lines, minimal contrast
+  const gridSize = Math.max(w,d) * 1.2;
+  const gridDivs = Math.round(gridSize / 0.3048); // one line per foot
+  const grid = new THREE.GridHelper(gridSize, gridDivs, 0x222018, 0x1c1a12);
+  grid.position.y = 0.002;
   grid.userData.isRoom = true;
   scene.add(grid);
 
@@ -1292,15 +1293,23 @@ function launch(){
   renderCatalog();
   renderCart();
   updateStats();
-  // Load design from URL if present
-  if(window.supabase){
-    const params = new URLSearchParams(window.location.search);
-    const designId = params.get('design');
-    if(designId) loadDesign(designId, '');
-  }
 }
 
 document.getElementById('btn-skip').onclick = launch;
+
+// Auto-launch if a design ID is in the URL — skip scan overlay entirely
+const _urlParams = new URLSearchParams(window.location.search);
+const _designId = _urlParams.get('design');
+if(_designId){
+  // Wait for Supabase to load then launch directly
+  const _autoLaunch = setInterval(()=>{
+    if(window.supabase){
+      clearInterval(_autoLaunch);
+      launch();
+      loadDesign(_designId, '');
+    }
+  }, 100);
+}
 
 document.getElementById('btn-scan').onclick = ()=>{
   const btn = document.getElementById('btn-scan');
