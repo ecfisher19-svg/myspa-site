@@ -1,0 +1,46 @@
+/*
+ * MySpa shared styles.
+ *
+ * Design tokens (CSS variables) and the universal reset live here so every page
+ * picks up the same palette without re-declaring them. Page-specific styles
+ * continue to live in each page's own <style> block for now.
+ *
+ * Pages that deliberately tweak a token (e.g. editor.html uses slightly warmer
+ * text colors) still set it locally inside their own :root — the cascade lets
+ * the per-page override win.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --gold: #c9a96e;
+  --gold-lt: #e8d5b0;
+  --gold-dim: #c9a96e18;
+  --gold-mid: #c9a96e40;
+
+  --bg: #080807;
+  --surface: #111110;
+  --surface2: #191918;
+  --surface3: #222220;
+
+  --border: #2a2928;
+  --border2: #3a3836;
+
+  --text: #f0ebe3;
+  --text2: #9a9088;
+  --text3: #524e48;
+  --cream: #f0ebe3;
+
+  --danger: #e05555;
+  --success: #5db888;
+}
+
+html {
+  scroll-behavior: smooth;
+}
