@@ -1449,13 +1449,12 @@ function setMode(m){
 document.getElementById('btn-move').onclick = ()=>setMode('move');
 document.getElementById('btn-rotate').onclick = ()=>{ setMode('move'); rotateSelected(); };
 document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
-document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); };
+document.getElementById('btn-reset').onclick = ()=>{ if(scene){ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); } };
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e=>{
   if(e.key === 'Delete' || e.key === 'Backspace'){
     const active = document.activeElement;
-    // Don't trigger if user is typing in an input
     if(active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
     if(selectedObj) removeSelected();
   }
@@ -1465,8 +1464,6 @@ document.addEventListener('keydown', e=>{
   }
   if(e.key === 'Escape') selectObject(null);
 });
-document.getElementById('btn-delete').onclick = ()=>{ setMode('delete'); toast('Click an item to remove it'); };
-document.getElementById('btn-reset').onclick = ()=>{ spherical={theta:0.55,phi:0.95,r:7}; updateCamera(); };
 
 /* ═══════════════════════════════════════════════════
    SCAN FLOW
@@ -1512,7 +1509,7 @@ document.getElementById('btn-scan').onclick = ()=>{
   });
 };
 
-// Init
+// Init — only build product panel, nothing that needs Three.js or Supabase
 buildProductPanel();
 renderCart();
 
