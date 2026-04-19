@@ -366,8 +366,20 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
 
     <div id="info-bar">
-      <span>Orbit: drag · Zoom: scroll · Double-click: rotate item</span>
+      <span>Orbit: drag · Zoom: scroll · Double-click: rotate · Drag to edge: remove</span>
       <span id="selected-info">Nothing selected</span>
+    </div>
+
+    <!-- Trash zone — appears when dragging toward sidebar -->
+    <div id="trash-zone" style="
+      position:absolute;right:0;top:0;bottom:0;width:80px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:rgba(224,85,85,0.08);border-left:1px dashed var(--danger);
+      opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:5;
+      font-size:10px;color:var(--danger);letter-spacing:0.08em;text-transform:uppercase;gap:8px;
+    ">
+      <div style="font-size:20px">✕</div>
+      <div>Remove</div>
     </div>
 
     <div id="toast"></div>
@@ -919,16 +931,45 @@ function onMouseMove(e){
     updateCamera(); return;
   }
   if(!isDragging||!dragObj) return;
+
+  const rect = renderer.domElement.getBoundingClientRect();
+
+  // Show trash zone when dragging toward the right edge (sidebar)
+  const trashZone = document.getElementById('trash-zone');
+  if(trashZone){
+    const nearEdge = e.clientX > rect.right - 100;
+    trashZone.style.opacity = nearEdge ? '1' : '0';
+  }
+
   const t = getFloorHit(e.clientX, e.clientY);
   if(t){
     const p = dragObj.userData.product;
     const hw=roomDims.w/2, hd=roomDims.d/2;
     dragObj.position.x = Math.max(-hw+p.w/2, Math.min(hw-p.w/2, t.x));
+    dragObj.position.y = 0; // Always on floor
     dragObj.position.z = Math.max(-hd+p.d/2, Math.min(hd-p.d/2, t.z));
   }
 }
 
-function onMouseUp(){ isDragging=false; dragObj=null; isOrbiting=false; orbitStart=null; }
+function onMouseUp(e){
+  if(isDragging && dragObj){
+    const rect = renderer.domElement.getBoundingClientRect();
+    // If released over the sidebar (right side) — remove the item
+    if(e.clientX > rect.right - 10){
+      const id = dragObj.userData.productId;
+      scene.remove(dragObj);
+      placedObjects = placedObjects.filter(o=>o!==dragObj);
+      cartItems = cartItems.filter(c=>c.id!==id);
+      if(selectedObj === dragObj) selectObject(null);
+      updateStats(); renderCart(); renderDesigns();
+      toast('Item removed');
+    }
+    // Hide trash zone
+    const trashZone = document.getElementById('trash-zone');
+    if(trashZone) trashZone.style.opacity = '0';
+  }
+  isDragging=false; dragObj=null; isOrbiting=false; orbitStart=null;
+}
 function onWheel(e){ spherical.r = Math.max(2.5, Math.min(18, spherical.r+e.deltaY*0.012)); updateCamera(); }
 function animate(){ requestAnimationFrame(animate); renderer.render(scene, camera); }
 
@@ -940,7 +981,8 @@ function dropProduct(id){
   if(!prod) return;
   const mesh = makeMesh(prod);
   const hw=roomDims.w/2-prod.w/2, hd=roomDims.d/2-prod.d/2;
-  mesh.position.set((Math.random()-0.5)*hw*1.2, prod.h/2, (Math.random()-0.5)*hd*1.2);
+  // y=0 so group sits on floor — internal geometry handles height offsets
+  mesh.position.set((Math.random()-0.5)*Math.max(0.1,hw), 0, (Math.random()-0.5)*Math.max(0.1,hd));
   scene.add(mesh);
   placedObjects.push(mesh);
   selectObject(mesh);
@@ -1120,7 +1162,7 @@ async function loadDesignById(id){
     const prod = PRODUCTS.find(p=>p.id===pl.id);
     if(!prod) return;
     const mesh = makeMesh(prod);
-    mesh.position.set(pl.x, prod.h/2, pl.z);
+    mesh.position.set(pl.x, 0, pl.z);
     mesh.rotation.y = pl.ry;
     scene.add(mesh);
     placedObjects.push(mesh);
@@ -1143,7 +1185,7 @@ function loadDesign(i){
     const prod = PRODUCTS.find(p=>p.id===pl.id);
     if(!prod) return;
     const mesh = makeMesh(prod);
-    mesh.position.set(pl.x, prod.h/2, pl.z);
+    mesh.position.set(pl.x, 0, pl.z);
     mesh.rotation.y = pl.ry;
     scene.add(mesh);
     placedObjects.push(mesh);
